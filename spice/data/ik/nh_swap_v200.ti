@@ -1,0 +1,435 @@
+KPL/IK
+
+\beginlabel
+PDS_VERSION_ID               = PDS3
+RECORD_TYPE                  = STREAM
+RECORD_BYTES                 = "N/A"
+^SPICE_KERNEL                = "nh_swap_v200.ti"
+MISSION_NAME                 = "NEW HORIZONS"
+SPACECRAFT_NAME              = "NEW HORIZONS"
+DATA_SET_ID                  = "NH-J/P/SS-SPICE-6-V1.0"
+KERNEL_TYPE_ID               = IK
+PRODUCT_ID                   = "nh_swap_v200.ti"
+PRODUCT_CREATION_TIME        = 2016-04-30T00:00:00
+PRODUCER_ID                  = "APL"
+MISSION_PHASE_NAME           = "N/A"
+PRODUCT_VERSION_TYPE         = ACTUAL
+PLATFORM_OR_MOUNTING_NAME    = "NEW HORIZONS"
+START_TIME                   = "N/A"
+STOP_TIME                    = "N/A"
+SPACECRAFT_CLOCK_START_COUNT = "N/A"
+SPACECRAFT_CLOCK_STOP_COUNT  = "N/A"
+TARGET_NAME                  = {
+                               JUPITER,
+                               PLUTO,
+                               "SOLAR SYSTEM"
+                               }
+INSTRUMENT_NAME              = "SOLAR WIND AROUND PLUTO"
+NAIF_INSTRUMENT_ID           = -98600
+SOURCE_PRODUCT_ID            = "N/A"
+NOTE                         = "See comments in the file for details"
+OBJECT                       = SPICE_KERNEL
+  INTERCHANGE_FORMAT         = ASCII
+  KERNEL_TYPE                = INSTRUMENT
+  DESCRIPTION                = "NH SWAP instrument kernel"
+END_OBJECT                   = SPICE_KERNEL
+\endlabel
+
+KPL/IK
+
+
+SWAP Instrument Kernel
+==============================================================================
+
+   This instrument kernel (I-kernel) contains references to the mounting
+   alignment, internal and FOV geometry for the New Horizons Solar Wind
+   Around Pluto (SWAP) instrument.
+
+
+Version and Date
+----------------------------------------------------------
+
+   The TEXT_KERNEL_ID stores version information of loaded project text
+   kernels. Each entry associated with the keyword is a string that consists
+   of four parts: the kernel name, version, entry date, and type. For example,
+   the SWAP I-kernel might have an entry as follows:
+
+         TEXT_KERNEL_ID += 'NEWHORIZONS_SWAP V1.0.0 22-FEBRUARY-2007 IK'
+                                    |           |         |          |
+                                    |           |         |          |
+                KERNEL NAME <-------+           |         |          |
+                                                |         |          V
+                                VERSION <-------+         |     KERNEL TYPE
+                                                          |
+                                                          V
+                                                     ENTRY DATE
+
+   SWAP I-Kernel Version:
+
+           \begindata
+
+           TEXT_KERNEL_ID += 'NEWHORIZONS_SWAP V2.0.0 27-JANUARY-2015 IK'
+
+           NAIF_BODY_NAME += ( 'NH_SWAP' )
+           NAIF_BODY_CODE += ( -98600 )
+
+           \begintext
+
+   Version 2.0.0 -- January 27, 2015 -- Eric Zirnstein
+   
+            --   Corrected the SWAP FOV limits in elevation, change to +/- 5 deg.
+
+   Version 1.0.0 -- February 22, 2007 -- Lillian Nguyen
+
+            --   Promoting to version 1.0.0 denoting approval of kernel set
+                 by instrument teams.
+
+   Version 0.0.2 -- October 4, 2006 -- Lillian Nguyen, JHU/APL
+
+            --   Removed the 3-letter frame NH_SWA.
+
+   Version 0.0.1 -- June 29, 2006 -- Lillian Nguyen
+
+            --   Reversed the field of view elevations and added more text
+                 on the instrument orientation.
+
+   Version 0.0.0 -- April 15, 2006 -- Lillian Nguyen
+
+            --   Draft Version. NOT YET APPROVED BY INSTRUMENT TEAM.
+
+
+References
+----------------------------------------------------------
+
+            1.   New Horizons Spacecraft to SWAP Interface Control Document,
+                 7399-9047 Rev. A.
+
+            2. ``Kernel Pool Required Reading''
+
+            3.   APL New Horizons web site,
+                 http://pluto.jhuapl.edu/spacecraft/overview.html.
+
+            4.   New Horizons Spacecraft Frames Kernel.
+
+            5.   New Horizons Instrument Specification for the Solar Wind
+                 Around Pluto (SWAP) Instrument, 05310-03-SWAPSPEC-01 dated
+                 Jan. 5, 2005, taken from APL DOORS database.
+
+            6.   E-mail exchange with Heather Elliot, Southwest Research
+                 Institute (SwRI) March and June, 2006.
+
+            7.   Discussion at New Horizons CCB meeting Feb. 16, 2016, in 
+                 which it was noted that normal instrument operations have 
+                 the deflector turned off, in which case the FOV elevation
+                 is -5 to 5 degrees.
+            
+Contact Information
+----------------------------------------------------------
+
+   Lillian Nguyen, JHU/APL, (443)-778-5477, Lillian.Nguyen@jhuapl.edu
+
+
+Implementation Notes
+----------------------------------------------------------
+
+   This file is used by the SPICE system as follows: programs that make use of
+   this instrument kernel must ``load'' the kernel, normally during program
+   initialization. Loading the kernel associates data items with their names
+   in a data structure called the ``kernel pool''. The SPICELIB routine FURNSH,
+   CSPICE routine furnsh_c, and IDL routine cspice_furnsh load SPICE kernels
+   as shown below:
+
+   FORTRAN (SPICELIB)
+
+           CALL FURNSH ( 'kernel_name' )
+
+   C (CSPICE)
+
+           furnsh_c ( "kernel_name" )
+
+   ICY (IDL)
+
+           cspice_furnsh, 'kernel_name'
+
+   In order for a program or subroutine to extract data from the pool, the
+   SPICELIB routines GDPOOL, GCPOOL, and GIPOOL are used. See [2] for details.
+
+   This file was created and may be updated with a text editor or word
+   processor.
+
+
+Naming Conventions
+----------------------------------------------------------
+
+   All names referencing values in this I-kernel start with the characters
+   `INS' followed by the NAIF New Horizons spacecraft ID number (-98)
+   followed by a NAIF three digit ID code for the SWAP instrument.
+
+   The remainder of the name is an underscore character followed by the unique
+   name of the data item. For example, the SWAP boresight direction in the
+   SWAP frame (``NH_SWAP'' -- see [4] ) is specified by:
+
+           INS-98600_BORESIGHT
+
+   The upper bound on the length of the name of any data item is 32
+   characters.
+
+   If the same item is included in more than one file, or if the same item
+   appears more than once within a single file, the latest value supersedes
+   any earlier values.
+
+
+SWAP description
+----------------------------------------------------------
+
+   From [3]:
+
+   ``SWAP (Solar Wind Around Pluto): Solar wind and plasma spectrometer;
+     measures the composition and density of plasma (ions) escaping from
+     Pluto's atmosphere.
+     .
+     .
+     .
+     SWAP will measure charged particles from the solar wind near Pluto to
+     determine whether Pluto has a magnetosphere and how fast its atmosphere
+     is escaping.''
+
+   From [1]:
+
+   ``SWAP consists of [a] single assembly...  SWAP measures the speed and
+     density of the solar wind. A large aperture Electrostatic Analyzer (ESA)
+     provides coarse energy selection. A Retarding Potential Analyzer (RPA)
+     then makes a fine resolution energy measurement. The instrument has
+     redundant Channel Electron Multiplier (CEM) detector. The optics and
+     detectors are serviced by an array of redundant High Voltage Power
+     Supplies that are fabricated on two separate boards: a multiplier board
+     and a driver board. The control board, at the bottom of the stack,
+     contains the low voltage power converters, a micro-controller, RS-422
+     drivers & receivers, as well as various analog control and monitoring
+     circuits.''
+
+   From [5]:
+
+   ``The Mission Science Requirements document states that SWAP will be used
+     to meet the following three objectives.
+     Group 1 Objective:  Characterize the neutral atmosphere of Pluto and its
+                         escape rate.
+     Group 2 Objective:  Characterize Pluto's ionosphere and solar wind
+                         interaction
+     Group 3 Objective:  Characterize the energetic particle environment of
+                         Pluto and Charon
+
+     The Mission Science Requirements document specifies that SWAP should
+     make the following measurements.
+        Measure solar wind standoff to ~ 3000 km.
+        Measure solar wind speed.  SWAP's goal is to have relative solar wind
+                         resolution ~ 0.5% on nominal 1 keV solar wind.
+        Measure solar wind density.  SWAP's goal is to resolve relative density
+                         variation to ~ 1%.
+        Determine nature of solar wind interaction at Pluto. Distinguish
+                         between magnetic, cometary, & ionospheric
+                         interactions.
+
+     The SWAP instrument measures the speed and density of the solar wind. It
+     also measures pickup ions with E/Q less than 8 keV. The SWAP instrument
+     consists of an RPA followed by an ESA. The RPA is a high-pass filter that
+     can be used to make a very fine resolution E/Q measurement. The ESA is a
+     coarse energy analyzer ((delta E)/E = 0.1). Its broad energy range is
+     used to quickly find the center of the solar wind beam. The ESA also
+     provides excellent UV rejection for the detectors. The instrument has
+     redundant CEM detectors. Together, they are used to make a coincidence
+     measurement that gives the instrument a very low background. The primary
+     particle passes through a carbon foil, generating secondary electrons.
+     The primary particle continues on and strikes the Primary CEM detector.
+     Secondary electrons from the entrance side of the carbon foil are focused
+     onto the Secondary CEM detector. If a primary event is followed by a
+     secondary event within the specified time window, a coincidence event is
+     detected.
+     The electro-optics of the instruments is serviced by an array of
+     redundant high voltage power supplies [(HVPS)]. The RPA, DFL
+     [(Deflector)], and ESA each have two HVPS power supplies. The outputs of
+     the supplies are diode OR-ed together. Each detector has its own HVPS,
+     making the detectors redundant units.
+     On the SWAP instrument control board, a microcontroller is used to
+     process commands and generate telemetry. Instrument commands are received
+     over redundant low speed RS-422 lines and telemetry is sent to two
+     solid-state recorders on the spacecraft over redundant low speed RS-422
+     lines. Analog electronics on the control board generates the analog
+     command levels to each HVPS as well as switching power on and off to each
+     HVPS. The control board contains the charge amplifiers that are used to
+     process the signals from the CEM detectors.''
+
+
+SWAP Field of View Parameters
+----------------------------------------------------------
+
+   From [6, 7], the SWAP field of view in the roll direction is 276 degrees, and
+   -5 to +5 degrees in the deflection direction (deflector off), where the 
+   negative direction is towards the spacecraft. The negative deflection 
+   direction corresponds to the instrument +Z axis, so in instrument 
+   coordinates, the field of view in the deflection direction is +5 to -5 deg.
+
+   The field of view can be described as a 276 degree portion of the
+   complement of the cones depicted in the figure below, with the instrument
+   +Y axis as the center of the field of view. In this view, we are looking
+   into the center of the instrument aperture. The vector pointing out the top
+   of the instrument is the instrument -Z axis, and is nearly aligned with
+   the spacecraft -Z axis.
+
+                       ^ -Z
+                       |   inst
+                       |
+                       |
+                instrument top                 +Y    points out of the page
+            ___________|___________              inst
+           `-.._       |       _..-'
+                 `-.._ | _..-'  5 deg
+      <----------------o---------------->  X
+                 _..-' | `-.._  5 deg       inst
+            ..-'       |       `-..
+           '-----------------------`
+                       |
+      instrument bottom (spacecraft-facing side)
+          ESA and electronics are here
+                       |
+                       |
+                       v
+
+   In the instrument XY plane, the azimuth of the field of view is the 276
+   degree portion of the circle below. This diagram shows the view looking
+   out from the spacecraft (view from the bottom of the instrument). The
+   vector pointing out the top of the instrument (instrument -Z axis) points
+   into the page here. When open, the instrument doors hang downwards in this
+   view, or towards the -Y axis.
+
+
+                       ^ Y
+                       |  inst
+                       |                       +Z    points out of the page
+                   _..-+-.._                     inst
+                 .'    |    '.
+                /      |      \
+               |       |       |
+        <------+-------o-------+------>  X
+               |     ,'|`.     |          inst
+                \  ,'  |  `.  /
+                 .'  doors  `.
+               ,'      |      `.
+             .'     o  |    o   `.
+            '     42   |  42      `
+                       v
+
+
+   To describe the SWAP field of view, we will provide a set of unit vectors
+   originating at the center of the instrument coordinate system that point
+   along the edge of the field of view. The vectors will be listed in the
+   order one would encounter them while traveling around the edge of the
+   field of view.
+
+   We will take 46 degree steps in azimuth as we traverse the edge from vector
+   V0 to vector V6, then -10 degrees in elevation as we go from V6 to V7, then
+   46 degree steps again from V7 to V13. A projection onto the instrument XY
+   plane of the fourteen unit vectors defining the field of view is shown
+   below. Since we are looking upwards from the bottom of the instrument, the
+   vectors below the plane of the page point towards the top of the instrument.
+
+
+                         Y
+                       ^  inst                 'below' refers to vectors
+                       |                        below the plane of the page,
+                       V3  (above)              or with negative Z component.
+                       V10 (below)
+           V4 (above)  |                       'above' refers to vectors
+           V9 (below).-+-.._    V2  (above)     above the plane of the page,
+                 .'    |    '.  V11 (below)     or with positive Z component.
+                /  `.  |  .'  \
+               |     `.|.'     |
+     V5 (above)+- - - -o- - - -+ V1  (above)---> X
+     V8 (below)|     ,'|`.     | V12 (below)      inst
+                \  ,'  |  `.  /
+                 .'   o|  o `. V0  (above)
+       V6 (above)   42 |42     V13 (below)
+       V7 (below)      |
+                       |
+                       v
+
+            Instrument +Z axis points
+                out of the page
+
+   As an example, we illustrate the calculation to determine the coordinates
+   of unit vector V2 here. The first diagram below shows a cross-section of
+   the field of view. Note that the horizontal axis lies in the instrument XY
+   plane but does not align with any of the instrument axes. The second
+   diagram shows the vector V2 from the same perspective as the diagram above.
+   Because the second diagram shows a projection of the vector V2 onto the
+   instrument XY plane, its length is cos(5). All angles are in degrees.
+
+      instrument bottom
+      (spacecraft side)                          ^ Y
+            ^ Z                                  |  inst
+            |  inst               cos(5)*sin(44) +----------. V2
+            |                                    |        .'|
+     sin(6) +------------_. V2                   | cos(5)'  |
+            |    1   _.-' |                      |    .'    |
+            |    _.-'     |                      |  .'      |
+            |_.-'   5 deg |                      |.' 44 deg |           X
+            +-------------+------->              o----------+--------->  inst
+                         cos(5)             Z   (out)      cos(5)*cos(44)
+                                             inst
+
+
+   The X and Y components of the vectors V0 to V13 are:
+
+      V0:  (X,Y) = cos( 5 deg ) * ( cos(-48 deg), sin(-48 deg) )
+      V1:  (X,Y) = cos( 5 deg ) * ( cos( -2 deg), sin( -2 deg) )
+      V2:  (X,Y) = cos( 5 deg ) * ( cos( 44 deg), sin( 44 deg) )
+      V3:  (X,Y) = cos( 5 deg ) * ( cos( 90 deg), sin( 90 deg) )
+      V4:  (X,Y) = cos( 5 deg ) * ( cos(136 deg), sin(136 deg) )
+      V5:  (X,Y) = cos( 5 deg ) * ( cos(182 deg), sin(182 deg) )
+      V6:  (X,Y) = cos( 5 deg ) * ( cos(228 deg), sin(228 deg) )
+      V7:  (X,Y) = cos( -5 deg ) * ( cos(228 deg), sin(228 deg) )
+      V8:  (X,Y) = cos( -5 deg ) * ( cos(182 deg), sin(182 deg) )
+      V9:  (X,Y) = cos( -5 deg ) * ( cos(136 deg), sin(136 deg) )
+      V10: (X,Y) = cos( -5 deg ) * ( cos( 90 deg), sin( 90 deg) )
+      V11: (X,Y) = cos( -5 deg ) * ( cos( 44 deg), sin( 44 deg) )
+      V12: (X,Y) = cos( -5 deg ) * ( cos( -2 deg), sin( -2 deg) )
+      V13: (X,Y) = cos( -5 deg ) * ( cos(-48 deg), sin(-48 deg) )
+
+   And since the field of view elevation is +5 to -5 degrees, the Z
+   component of each of the 'above' vectors is
+
+       V0 to V6:  Z = sin ( 5 deg )
+
+   and the Z component of each of the 'below' vectors is
+
+       V7 to V13: Z = sin ( -5 deg )
+
+   The fourteen boundary corner vectors given in the field of view definition
+   below, starting with V0.
+
+           \begindata
+
+           INS-98600_FOV_FRAME                 = 'NH_SWAP'
+           INS-98600_FOV_SHAPE                 = 'POLYGON'
+           INS-98600_BORESIGHT                 = ( 0.0, 1.0, 0.0 )
+           INS-98600_FOV_CLASS_SPEC            = 'CORNERS'
+           INS-98600_FOV_BOUNDARY_CORNERS      = (
+
+                  0.666584362385609360 -0.740316935054895600  0.087155742747658166
+                  0.995587843197948020 -0.034766693581101821  0.087155742747658166
+                  0.716602495223739090  0.692014985636304700  0.087155742747658166
+                  0.000000000000000061  0.996194698091745550  0.087155742747658166
+                 -0.716602495223739200  0.692014985636304590  0.087155742747658166
+                 -0.995587843197948020 -0.034766693581101751  0.087155742747658166
+                 -0.666584362385609590 -0.740316935054895490  0.087155742747658166
+                 -0.666584362385609590 -0.740316935054895490 -0.087155742747658166
+                 -0.995587843197948020 -0.034766693581101751 -0.087155742747658166
+                 -0.716602495223739200  0.692014985636304590 -0.087155742747658166
+                  0.000000000000000061  0.996194698091745550 -0.087155742747658166
+                  0.716602495223739090  0.692014985636304700 -0.087155742747658166
+                  0.995587843197948020 -0.034766693581101821 -0.087155742747658166
+                  0.666584362385609360 -0.740316935054895600 -0.087155742747658166
+
+                                                 )
+
+           \begintext

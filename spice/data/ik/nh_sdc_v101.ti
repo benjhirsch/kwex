@@ -1,0 +1,249 @@
+KPL/IK
+
+\beginlabel
+PDS_VERSION_ID               = PDS3
+RECORD_TYPE                  = STREAM
+RECORD_BYTES                 = "N/A"
+^SPICE_KERNEL                = "nh_sdc_v101.ti"
+MISSION_NAME                 = "NEW HORIZONS"
+SPACECRAFT_NAME              = "NEW HORIZONS"
+DATA_SET_ID                  = "NH-J/P/SS-SPICE-6-V1.0"
+KERNEL_TYPE_ID               = IK
+PRODUCT_ID                   = "nh_sdc_v101.ti"
+PRODUCT_CREATION_TIME        = 2009-01-09T18:21:42
+PRODUCER_ID                  = APL
+MISSION_PHASE_NAME           = "N/A"
+PRODUCT_VERSION_TYPE         = ACTUAL
+PLATFORM_OR_MOUNTING_NAME    = "NEW HORIZONS"
+START_TIME                   = "N/A"
+STOP_TIME                    = "N/A"
+SPACECRAFT_CLOCK_START_COUNT = "N/A"
+SPACECRAFT_CLOCK_STOP_COUNT  = "N/A"
+TARGET_NAME                  = {
+                               JUPITER,
+                               PLUTO,
+                               "SOLAR SYSTEM"
+                               }
+INSTRUMENT_NAME              = "STUDENT DUST COUNTER"
+NAIF_INSTRUMENT_ID           = -98700
+SOURCE_PRODUCT_ID            = "N/A"
+NOTE                         = "See comments in the file for details"
+OBJECT                       = SPICE_KERNEL
+  INTERCHANGE_FORMAT         = ASCII
+  KERNEL_TYPE                = INSTRUMENT
+  DESCRIPTION                = "NH SDC instrument kernel "
+END_OBJECT                   = SPICE_KERNEL
+\endlabel
+
+
+SDC Instrument Kernel
+==============================================================================
+
+   This instrument kernel (I-kernel) contains references to the mounting
+   alignment, internal and FOV geometry for the New Horizons Student Dust
+   Counter (SDC) instrument.
+
+
+Version and Date
+----------------------------------------------------------
+
+   The TEXT_KERNEL_ID stores version information of loaded project text
+   kernels. Each entry associated with the keyword is a string that consists
+   of four parts: the kernel name, version, entry date, and type. For example,
+   the SDC I-kernel might have an entry as follows:
+
+         TEXT_KERNEL_ID += 'NEWHORIZONS_SDC V1.0.0 22-FEBRUARY-2007 IK'
+                                    |           |        |          |
+                                    |           |        |          |
+                KERNEL NAME <-------+           |        |          |
+                                                |        |          V
+                                VERSION <-------+        |     KERNEL TYPE
+                                                         |
+                                                         V
+                                                    ENTRY DATE
+
+   SDC I-Kernel Version:
+
+           \begindata
+
+           TEXT_KERNEL_ID += 'NEWHORIZONS_SDC V1.0.1 4-AUGUST-2008 IK'
+
+           NAIF_BODY_NAME += ( 'NH_SDC' )
+           NAIF_BODY_CODE += ( -98700 )
+
+           \begintext
+
+   Version 1.0.1 -- August 4, 2008 -- Lillian Nguyen
+
+            --   Fixed a typo in the text.
+
+   Version 1.0.0 -- February 22, 2007 -- Lillian Nguyen
+
+            --   Defined a celestial position angle reference vector.
+            --   Promoting to version 1.0.0 denoting approval of kernel set
+                 by instrument teams.
+
+   Version 0.0.1 -- January 15, 2006 -- Lillian Nguyen
+
+            --   Draft Version. NOT YET APPROVED BY INSTRUMENT TEAM.
+            --   Added field of view diagram.
+
+   Version 0.0.0 -- January 15, 2006 -- Lillian Nguyen
+
+            --   Draft Version. NOT YET APPROVED BY INSTRUMENT TEAM.
+
+
+References
+----------------------------------------------------------
+
+            1.   New Horizons Spacecraft to SDC Interface Control Document,
+                 7399-9050 Rev A.
+
+            2. ``Kernel Pool Required Reading''
+
+            4.   APL New Horizons web site,
+                 http://pluto.jhuapl.edu/spacecraft/overview.html.
+
+            5.   E-mail exchange with David James (Laboratory for Atmospheric
+                 and Space Physics at the University of Colorado (LASP)),
+                 Jan. 26, 2006 - Feb. 1, 2006.
+
+            6.   New Horizons Spacecraft Frames Kernel.
+
+
+Contact Information
+----------------------------------------------------------
+
+   Lillian Nguyen, JHU/APL, (443)-778-5477, Lillian.Nguyen@jhuapl.edu
+
+
+Implementation Notes
+----------------------------------------------------------
+
+   This file is used by the SPICE system as follows: programs that make use of
+   this instrument kernel must ``load'' the kernel, normally during program
+   initialization. Loading the kernel associates data items with their names
+   in a data structure called the ``kernel pool''. The SPICELIB routine FURNSH,
+   CSPICE routine furnsh_c, and IDL routine cspice_furnsh load SPICE kernels
+   as shown below:
+
+   FORTRAN (SPICELIB)
+
+           CALL FURNSH ( 'kernel_name' )
+
+   C (CSPICE)
+
+           furnsh_c ( "kernel_name" )
+
+   ICY (IDL)
+
+           cspice_furnsh, 'kernel_name'
+
+   In order for a program or subroutine to extract data from the pool, the
+   SPICELIB routines GDPOOL, GCPOOL, and GIPOOL are used. See [2] for details.
+
+   This file was created and may be updated with a text editor or word
+   processor.
+
+
+Naming Conventions
+----------------------------------------------------------
+
+   All names referencing values in this I-kernel start with the characters
+   `INS' followed by the NAIF New Horizons spacecraft ID number (-98)
+   followed by a NAIF three digit ID code for the SDC instrument.
+
+   The remainder of the name is an underscore character followed by the unique
+   name of the data item.  For example, the SDC boresight direction in the
+   SDC frame (``NH_SDC'' -- see [6] ) is specified by:
+
+           INS-98700_BORESIGHT
+
+   The upper bound on the length of the name of any data item is 32
+   characters.
+
+   If the same item is included in more than one file, or if the same item
+   appears more than once within a single file, the latest value supersedes
+   any earlier values.
+
+
+SDC description
+----------------------------------------------------------
+
+   From [4]:
+
+   ``The Student Dust Counter (SDC) will count and measure the sizes of dust
+   particles along New Horizons' entire trajectory, which covers regions of
+   interplanetary space never before sampled. Such dust particles are created
+   by comets shedding material and Kuiper Belt Objects colliding with one
+   another. The SDC is managed and was built primarily by students at the
+   University of Colorado in Boulder, with supervision from professional
+   space scientists.''
+
+   From [1]:
+
+   ``The SDC's primary goal is to map the dust distribution from 1 to 50 AU
+   in our solar system.  Its secondary goal is to detect the putative dust
+   ring/halo at Pluto.  To do this, it uses detector patches consisting of
+   permanently polarized polyvinylidine fluoride (PVDF) thin film.  A dust
+   grain that penetrates this film generates a de-polarization charge in the
+   film whose amplitude is a function of the grain's mass and velocity.
+   [This is adapted from an undated LASP document entitled "The Student Dust
+   Counter Experiment"].''
+
+
+SDC Field of View Parameters
+----------------------------------------------------------
+
+   The SDC frame is defined such that the boresight is the instrument Z axis.
+   From [5], the field of view is circular with a 180 degree angular
+   separation. The field of view can also be described as the half-space
+   given in instrument coordinates by Z > 0. In the following diagram, the
+   field of view is the entire half-space to the right of the XY plane.
+
+
+                  Y    ^
+                   ins |
+                       |
+                       |
+                       |
+                       |-.  90 deg
+                       |  `
+               +X (in) x---'-----------> +Z
+                 ins   |                   ins
+                       |
+                       |
+                       |
+                       |
+                       |
+                       V
+
+
+   Because the SDC field of view is circular, the FOV reference vector (keyword
+   FOV_REF_VECTOR) is any vector with a component that lies in a plane normal
+   to the field of view boresight. We chose the +Y axis of the instrument
+   frame. These FOV values are given in the keywords below:
+
+           \begindata
+
+           INS-98700_FOV_FRAME                 = 'NH_SDC'
+           INS-98700_FOV_SHAPE                 = 'CIRCLE'
+           INS-98700_BORESIGHT                 = ( 0.0, 0.0, 1.0 )
+           INS-98700_FOV_CLASS_SPEC            = 'ANGLES'
+           INS-98700_FOV_REF_VECTOR            = ( 0.0, 1.0, 0.0 )
+           INS-98700_FOV_REF_ANGLE             = ( 90.0 )
+           INS-98700_FOV_ANGLE_UNITS           = 'DEGREES'
+
+           \begintext
+
+   Also defined here is the celestial position angle reference vector. This
+   vector defines the position angle, or angle from celestial north (and
+   passing through celestial east) to the reference vector.
+
+           \begindata
+
+           INS-98700_REFERENCE_VECTOR  = ( 1.0, 0.0, 0.0 )
+
+           \begintext
+
+
