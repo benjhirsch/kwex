@@ -189,7 +189,7 @@ for kt in kw_lists:
 output_list = []
 
 #check if recaclulated spice keywords are present in keyword list
-spice_list = ['SPCCBTID', 'SPCBRRA', 'SPCBRDEC', 'SPCEMEN', 'NEWHORIZONS:SOLAR_FOV_AZIMUTH', 'SPCQA', 'SPCQX', 'SPCQY', 'SPCQZ', 'SPCESCRN', 'SPCSSCRN', 'SPCSSCX', 'SPCSSCY', 'SPCSSCZ', 'SPCSSCVX', 'SPCSSCVY', 'SPCSSCVZ', 'SPCESCX', 'SPCESCY', 'SPCESCZ', 'SPCTSCVX', 'SPCTSCVY', 'SPCTSCVZ', 'SPCPAYIN', 'SPCPAZIN']
+spice_list = ['SPCCBTID', 'SPCBRRA', 'SPCBRDEC', 'SPCEMEN', 'NEWHORIZONS:SOLAR_FOV_AZIMUTH', 'SPCQA', 'SPCQX', 'SPCQY', 'SPCQZ', 'SPCESCRN', 'SPCSSCRN', 'SPCSSCX', 'SPCSSCY', 'SPCSSCZ', 'SPCSSCVX', 'SPCSSCVY', 'SPCSSCVZ', 'SPCESCX', 'SPCESCY', 'SPCESCZ', 'SPCTSCVX', 'SPCTSCVY', 'SPCTSCVZ', 'SPCPAYIN', 'SPCPAZIN', 'SPCESCVX', 'SPCESCVY', 'SPCESCVZ', 'SPCTSCX', 'SPCTSCY', 'SPCTSCZ']
 fix_spice = any([kw in spice_list for kw, kt in kw_list])
 if fix_spice:
     report('recalculable SPICE keywords detected')
