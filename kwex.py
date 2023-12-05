@@ -106,6 +106,7 @@ def init_eval():
     return se
 
 def init_spice(fits_file, kernel_file, ref_frame, spacecraft, abcorr='LT+S'):
+    #adapted from Benjamin Sharkey's spiceypy code
     spice.kclear()
     kwex_dir = os.getcwd()
     os.chdir(os.path.dirname(kernel_file))
@@ -265,6 +266,7 @@ if spice_list:
 
         with open(sp_calc_file) as f:
             spice_calc = json.load(f)
+            #SPICE formulas adapted from Benjamin Sharkey's spiceypy code
 
         #removes namespaces from numpy and spice functions because otherwise they don't work with simpleeval
         for k in spice_calc:

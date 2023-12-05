@@ -149,6 +149,14 @@ Again, be sure to include the parse statement before the variables it
 defines are required.
 
 
+Credit
+======
+
+The SPICE routines in this tool were adapted from code written by Benjamin
+Sharkey, Visiting Senior Faculty Specialist at UMD, with contributions from
+Adeline Gicquel-Brodtke, Senior Faculty Specialist at UMD.
+
+
 Contact Info
 ============
 
