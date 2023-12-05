@@ -1,20 +1,28 @@
+kwex 2.0 (aka kwex2xml)
+
 Using kwex
 ==========
 
-This tool takes as input a CSV file containing a list of keywords and a FITS
-file from which you wish to extract those keywords and their values. It outputs
-a text file (extension ".kwl") with a form similar enough to a PDS3 label file
-that the MILabel tool can read it and populate a Velocity template.
+This tool takes as input a Velocity template file containing pointers to
+keywords and a FITS file from which you wish to extract the values of those
+keywords. It outputs the template file merged with those values.
 
 kwex is a Python script run by the Python interpreter and therefore requires
-Python (3.x) to use. Make sure to place the tool somewhere in your Python PATH.
+Python (3.x) to use. Make sure to place the tool somewhere in your Python
+PATH. Depending on your use case, astropy, spiceypy, and simpleeval are also
+required modules; run pip install requirements.txt to install (or equivalent
+for your Python environment).
+
+kwex also uses the Java-based Apache Velocity template engine. All necessary
+.jar files are included in the java/ directory, but you will need some version
+of Java installed.
 
 The basic command for running the script is:
 
-python kwex.py -f <path to fits file> -k <path to csv file>
+python kwex.py -v <path to velocity template> -f <paths to fits file>
 
 With this command, it will read the FITS file along with any PDS3 label that has
-the same name (and a .lbl extension) and output a .kwl file of the same name in
+the same name (and a .lbl extension) and output a .xml file of the same name in
 the directory of the FITS file.
 
 
@@ -25,110 +33,120 @@ Optional Parameters
 
 -o <path to output file>    Specifies a different name for the output file.
 
--d <optional log file>      Prints some minimal debugging to the console.
+-d                          Prints some minimal debugging to the console.
+
+-s <path to meta kernel>    Include to calculate SPICE keywords.
+
+-rf <reference frame>       Specifies a different reference frame for SPICE.
+                            Default is J2000.
+							
+-sc <spacecraft>            Specifies a difference spacecraft for SPICE.
+                            Default is NH (NEW HORIZONS).
 							
 -h, --help                  Print this file to the console.
 
 
-CSV Input File
-==============
+Velocity Template File
+======================
 
-This file contains the keywords you want to extract. Entries in the file take
-the form:
+Understanding Velocity is beyond the scope of this readme, but a guide to the
+version used in this tool can be found here:
 
-KEYWORD,SOURCE
+https://velocity.apache.org/engine/1.7/user-guide.html
 
-where source specifies where kwex is getting the keyword from. Currently valid
-sources are "FITS", "PDS3", and "COMMENT". COMMENT refers to comments in the
-PDS3 label, which for annoying reasons the tool has to process a bit
-differently.
+A few basics are necessary, however. The .vm template file acts as an input
+file to kwex, telling it which keywords it needs values for. At present, kwex
+has 3 possible sources for keyword values: FITS files, PDS3 label files, and
+SPICE function calls. A pointer to a keyword in the template file takes the
+form:
+
+$source.KEYWORD
+
+where source is one of "fits," "label," or "spice," and keyword is (usually)
+exactly as it appears in the source.
 
 
-Reading FITS Keywords
-=====================
+FITS Keywords
+=============
 
 By default, kwex searches for keywords in the primary header. To specify a
-different header, write the keyword as:
+different header, write the pointer as:
 
-KEYWORD_EXTN,FITS
+$fits_extN.keyword
 
 where N is the number of the extension. 0 is the primary header, so you probably
 want to begin with 1 for the first extension.
 
-If you need to read keywords that can be enumerated a variable number of times
-within a FITS header, the format is:
-
-KEYWORD.LOOP,FITS
-
-This will extract values from every instance of KEYWORDNN, where NN is the index
-of the keyword. It will appear in the output file as a "LOOP" object. Currently,
-kwex can only look for iterative keywords in the primary header.
+If you need to read iterating keywords that repeat with a different index value
+throughout the header, set keyword equal to the value of the keyword without an
+index. The pointer will contain an array of all the values found which you can
+loop through as needed.
 
 
-Reading PDS3 Keywords
-=====================
+PDS3 Keywords
+=============
 
-This is mostly unproblematic. To read from a keyword within a PDS3 nested
+This is mostly unproblematic. To point to a keyword within a PDS3 nested
 object, write:
 
-OBJECT_N_KEYWORD,PDS3
+$label.OBJECT.KEYWORD
 
 "OBJECT" is whatever is at the end of the "OBJECT = " line of the object you're
-looking for, N is the nth instance of that object (0-indexed), and KEYWORD is
-the keyword inside that object.
+looking for, and KEYWORD is the keyword inside that object.
 
-To pull a keyword from inside a comment in a PDS3 label, write:
+If a keyword or object has multiple instances in an object/label, they will be
+stored in the appropriate pointer as arrays and can be accessed like so:
 
-KEYWORD,COMMENT
-
-This is still looking for a keyword = value pair in the PDS3 label, but has some
-flexibility about where it finds it because of the nature of comment/note
-fields. That flexibility also means it might screw up sometimes and glob a
-little extra.
+$label.KEYWORD[index] (0-indexed)
 
 
-Output KWL File
-===============
+SPICE Keywords
+==============
 
-The file kwex generates is designed to mirror the structure of a PDS3 label so
-that MILabel can read it. In general, each line will appear as:
+The "source" for SPICE keywords is the spice_calcs.json file in the spice
+directory. This file contains FITS keywords and the SPICE function calls +
+calculations necessary for deriving the values of those keywords. A SPICE
+metakernel file (as well as all the kernels it references and the spiceypy
+library) are necessary to perform these calculations. spice_calcs.json
+can be updated to include more keywords/calculations, but a very limited number
+of functions and variables are available for use. See names_and_functions.txt
+for a list.
 
-KEYWORD = VALUE
 
-where keyword and value will be exactly the same as they were in whatever file
-you got them from. Exceptions include floats with trailing 0s after the decimal
-point in FITS headers, because astropy does not by default respect the native
-precision. To reference a keyword value pair in a .vm template, write:
+Java HashMaps and ArrayLists
+============================
 
-$label.KEYWORD
+If your extracted keyword values aren't directly analogous to attributes in
+your template, you can make use of the Java tools underneath the Velocity
+engine. In Velocity, a hashmap can be defined like so:
 
-where KEYWORD appears exactly as it does in the .kwl file.
+#set ( $mapName = { "key1" : "value1",
+                    "key2" : "value2",
+                    "key3" : "value3" } )
+					
+and so on. These maps can even be nested for situations in which one variable
+sets the value for multiple other variables. To access a map value, you can
+write:
 
-Additionally, any iterative keywords from the FITS header will be placed into a
-repeating, PDS3-like object like this:
+$mapName.key, $mapName[key], or $mapName.get(key)
 
-OBJECT = LOOP
-KEYWORD = VALUE
-KEYWORD = VALUE
-END_OBJECT = LOOP
-OBJECT = LOOP
-KEYWORD = VALUE
-KEYWORD = VALUE
-END_OBJECT = LOOP
+Similarly, ArrayLists contain a list of values that can be accessed by index.
+To define one, write:
 
-This object structure will be repeated for every instance of the keyword in
-question. Any NN index that was at the end of the keyword in the FITS header
-will NOT be here, because the index is instead encoded in which LOOP object
-MILabel finds the keyword in. To reference a particular keyword within an object
-in your .vm file, write:
+#set ( $arrayName = [value1, value2, value3] )
 
-$label.LOOP.get(N).KEYWORD
+and access them with:
 
-where N is the nth instance of LOOP (0-indexed). It's more likely, however, that
-you'll want a #foreach structure in your template that takes every instance of
-the keyword, so in the template it will probably look something like:
+$arrayName[index] (0-indexed)
 
-$label.LOOP.get($foreach.index).KEYWORD
+These maps and arrays can be included anywhere in your template (before the
+variables they define are used), or stored outside it and imported with the
+following command:
+
+#parse(filename.vm)
+
+Again, be sure to include the parse statement before the variables it
+defines are required.
 
 
 Contact Info

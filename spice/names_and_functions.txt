@@ -1,0 +1,22 @@
+Names
+=====
+target_state, target_lightTimes 	= 	spice.spkezr(fits_target_ID, et, ref_frame, abcorr, spacecraft)
+sol_pos, sol_ltt 					= 	spice.spkpos('Sun', et, instr_frame, abcorr, spacecraft)
+helio_state, helio_lightTimes 		= 	spice.spkezr(spacecraft, et, ref_frame, abcorr, 'SUN')
+geo_state, geo_lightTimes 			= 	spice.spkezr(spacecraft, et, ref_frame, abcorr, 'EARTH')
+i2j_mat 							= 	spice.pxform(instr_frame, ref_frame, et)
+j2i_mat 							= 	spice.pxform(ref_frame, instr_frame, et)
+fits_target_ID 						= 	SPCTCB
+minus_x_axis 						= 	[-1, 0, 0]
+j2000_north 						= 	[0, 0, 1]
+
+Functions
+=========
+np.multiply
+np.arctan2
+spice.recrad
+spice.mxv
+spice.dpr
+spice.m2q
+spice.vnorm
+spice.bodn2c
