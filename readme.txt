@@ -40,7 +40,7 @@ Optional Parameters
 -rf <reference frame>       Specifies a different reference frame for SPICE.
                             Default is J2000.
 							
--sc <spacecraft>            Specifies a difference spacecraft for SPICE.
+-sc <spacecraft>            Specifies a different spacecraft for SPICE.
                             Default is NH (NEW HORIZONS).
 							
 -h, --help                  Print this file to the console.
