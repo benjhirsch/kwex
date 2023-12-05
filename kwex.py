@@ -91,6 +91,9 @@ def init_eval():
     se.names['fits_target_ID'] = fits_target_ID
     se.names['minus_x_axis'] = [-1, 0, 0]
     se.names['j2000_north'] = [0, 0, 1]
+    se.names['target_EARTH_state'] = target_EARTH_state
+    se.names['target_SUN_state'] = target_SUN_state
+    se.names['target_state2'] = target_state2
     se.functions['multiply'] = np.multiply
     se.functions['recrad'] = spice.recrad
     se.functions['mxv'] = spice.mxv
@@ -105,25 +108,40 @@ def init_eval():
 def init_spice(fits_file, kernel_file, ref_frame, spacecraft, abcorr='LT+S'):
     spice.kclear()
     kwex_dir = os.getcwd()
-    os.chdir(of.path.dirname(kernel_file))
+    os.chdir(os.path.dirname(kernel_file))
     spice.furnsh(kernel_file)
     os.chdir(kwex_dir)
+    
     with fits.open(fits_file) as f:
         hdr = f[0].header
     sclk = hdr['SPCSCLK']
     instr_frame=hdr['SPCINSTR']
     et = spice.scs2e(-98, sclk)
+    
     try:
         target_state, target_lightTimes = spice.spkezr(hdr['SPCTCB'], et, ref_frame, abcorr, spacecraft)
+        target_state2, target_lightTimes2 = spice.spkezr(spacecraft, et, ref_frame, abcorr, hdr['SPCTCB'])
+        target_EARTH_state, target_EARTH_lightTimes = spice.spkezr(hdr['SPCTCB'], et, ref_frame, abcorr, 'EARTH')
+        target_SUN_state, target_SUN_lightTimes = spice.spkezr(hdr['SPCTCB'], et, ref_frame, abcorr, 'SUN')
     except:
         target_state = None
-    sol_pos, sol_ltt = spice.spkpos('Sun', et, instr_frame, abcorr, spacecraft)
+        target_state2 = None
+        target_SUN_state = None
+        target_EARTH_state = None
+
+    try:
+        i2j_mat = spice.pxform(instr_frame, ref_frame, et)
+        j2i_mat = spice.pxform(ref_frame, instr_frame, et)
+        sol_pos, sol_ltt = spice.spkpos('Sun', et, instr_frame, abcorr, spacecraft)
+    except:
+        i2j_mat = None
+        j2i_mat = None
+        sol_pos = None
+    
+    fits_target_ID = hdr['SPCTCB']
     helio_state, helio_lightTimes = spice.spkezr(spacecraft, et, ref_frame, abcorr, 'SUN')
     geo_state, geo_lightTimes = spice.spkezr(spacecraft, et, ref_frame, abcorr, 'EARTH')
-    i2j_mat = spice.pxform(instr_frame, ref_frame, et)
-    j2i_mat = spice.pxform(ref_frame, instr_frame, et)
-    fits_target_ID = hdr['SPCTCB']
-    return target_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID
+    return target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID
 
 #get command line arguments
 debug = get_arg('-d', flag=True)
@@ -242,7 +260,7 @@ if fits_list:
 #calculate values for SPICE keywords
 if spice_list:
     if os.path.exists(kernel_file):
-        target_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(fits_file, kernel_file, ref_frame, spacecraft)
+        target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(fits_file, kernel_file, ref_frame, spacecraft)
         se = init_eval()
 
         with open(sp_calc_file) as f:
