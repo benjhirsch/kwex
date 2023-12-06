@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VMtoXML {
     public static void main(String[] args) {
-        String jsonValFile = "json_file_name";
+        String jsonValFile = "C:/Users/auton/Documents/GitHub/kwex/tmp/vals.json";
 
         try {
             ObjectMapper objMpr = new ObjectMapper();

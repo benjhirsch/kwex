@@ -8,30 +8,12 @@ import json
 import spiceypy as spice
 import numpy as np
 from astropy.io import fits
-
-args = sys.argv
+import argparse
 
 #methods
 
-def get_arg(param, else_name='', flag=False, req=False):
-    if flag:
-        #true if flag is present, false otherwise
-        return param in args
-    else:
-        if param in args:
-            try:
-                #gets string that appears after parameter
-                return args[args.index(param)+1].replace("'", "")
-            except:
-                report('%s parameter value not found' % param, out=req)
-        elif not else_name == '':
-            #default parameter if not present
-            return else_name
-        else:
-            report('%s parameter not found' % param, out=req)
-
 def report(msg, out=False):
-    if debug or out:
+    if args.debug or out:
         print(msg)
 
     if out:
@@ -150,15 +132,40 @@ def init_spice(fits_file, kernel_file, ref_frame, spacecraft, abcorr='LT+S'):
     return target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID
 
 #get command line arguments
-debug = get_arg('-d', flag=True)
-fits_file = fix_path(get_arg('-f', req=True), exist=True)
-vm_file = fix_path(get_arg('-v', req=True), exist=True)
-pds3_file = fix_path(get_arg('-l', '%s/%s.lbl' % (os.path.dirname(fits_file), os.path.splitext(os.path.basename(fits_file))[0])), exist = get_arg('-l', flag=True))
-out_file = fix_path(get_arg('-o', '%s/%s.xml' % (os.path.dirname(fits_file), os.path.splitext(os.path.basename(fits_file))[0])))
-kernel_file = fix_path(get_arg('-s', 'spice/nh_v06.tm'), kwex_dir=True, exist=True)
-sp_calc_file = fix_path(get_arg('-c', 'spice/spice_calcs.json'), kwex_dir=True, exist=True)
-ref_frame = get_arg('-rf', 'J2000')
-spacecraft = get_arg('-sc', 'NH')
+parser = argparse.ArgumentParser(description='KeyWord EXtraction tool for PDS3-to-PDS4 migration')
+
+parser.add_argument('-v', dest='template',required=True, help='<path to velocity template>')
+parser.add_argument('-f', dest='fits', required=True, help='<path to fits file>')
+parser.add_argument('-l', dest='label', metavar='PDS3 label', help='Specifies a different name for the PDS3 label file.')
+parser.add_argument('-o', dest='output', help='Specifies a different name for the output file.')
+parser.add_argument('-d', dest='debug', action='store_true', help='Prints some minimal debugging to the console.')
+parser.add_argument('-k', dest='kernel', metavar='spice kernel', default='spice/nh_v06.tm', help='Include to calculate SPICE keywords.')
+parser.add_argument('-c', dest='spice_calcs', metavar='spice calcs', default='spice/spice_calcs.json', help='Specifies a different spice calculations file.')
+parser.add_argument('-r', dest='ref_frame', metavar='reference frame', default='J2000', help='Specifies a different reference frame for SPICE. Default is J2000.')
+parser.add_argument('-s', dest='spacecraft', default='NH', help='Specifies a different spacecraft for SPICE. Default is NH (NEW HORIZONS).')
+
+args = parser.parse_args()
+
+vm_file = fix_path(args.template, exist=True)
+
+fits_file = fix_path(args.fits, exist=True)
+fits_dir = os.path.dirname(fits_file)
+fits_fn = os.path.splitext(os.path.basename(fits_file))[0]
+
+if args.label:
+    pds3_file = fix_path(args.label, exist=True)
+else:
+    pds3_file = fix_path('%s/%s.lbl' % (fits_dir, fits_fn), exist=True)
+
+if args.output:
+    out_file = fix_path(args.ouput)
+else:
+    out_file = fix_path('%s/%s.xml' % (fits_dir, fits_fn))
+
+kernel_file = fix_path(args.kernel, kwex_dir=True, exist=True)
+sp_calc_file = fix_path(args.spice_calcs, kwex_dir=True, exist=True)
+ref_frame = args.ref_frame
+spacecraft = args.spacecraft
 
 #compile Velocity engine Java class
 json_file = fix_path('tmp/vals.json', kwex_dir=True)
