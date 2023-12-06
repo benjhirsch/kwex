@@ -22,17 +22,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VMtoXML {
     public static void main(String[] args) {
-        String jsonValStr = "c:/users/auton/desktop/kwex_geom/kwex2xml/vals.json";
+        String jsonValFile = "json_file_name";
 
         try {
             ObjectMapper objMpr = new ObjectMapper();
-            JsonNode rootNode = objMpr.readTree(new File(jsonValStr));
+            JsonNode rootNode = objMpr.readTree(new File(jsonValFile));
 
             Map<String, Object> valMap = jsonToMap(rootNode);
 
+            String tmpFilePath = valMap.get("template_file_path").toString();
+            String tmpFileName = valMap.get("template_file_name").toString();
+            String outFileName = valMap.get("output_file_name").toString();
+
             VelocityEngine velEng = new VelocityEngine();
             velEng.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
-            velEng.setProperty("file.resource.loader.path", "template_file_path");
+            velEng.setProperty("file.resource.loader.path", tmpFilePath);
             velEng.init();
 
             VelocityContext context = new VelocityContext();
@@ -43,13 +47,13 @@ public class VMtoXML {
             }
 
             Template tmp = null;
-            tmp = velEng.getTemplate("template_file_name");
+            tmp = velEng.getTemplate(tmpFileName);
 
             StringWriter strWriter = new StringWriter();
             tmp.merge(context, strWriter);
             String output = strWriter.toString();
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter("output_file_name"))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFileName))) {
                 writer.write(output);
             } catch (IOException e) {
                     e.printStackTrace();

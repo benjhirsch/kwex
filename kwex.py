@@ -48,11 +48,16 @@ def add_to_val(vtype, kw, val, file=None, except_val='KEYWORD VALUE NOT FOUND'):
         val_list[vtype][kw] = except_val
         report('keyword %s not found in %s' % (kw, file))
 
-def fix_path(path, exist=False):
+def fix_path(path, kwex_dir=False, exist=False):
+    if kwex_dir:
+        fix_dir = os.path.dirname(os.path.realpath(__file__))
+    else:
+        fix_dir = os.getcwd()
+
     if os.path.isabs(path):
         return_path = os.path.normpath(path)
     else:
-        return_path = os.path.normpath(os.path.join(os.getcwd(), path))
+        return_path = os.path.normpath(os.path.join(fix_dir, path))
 
     if exist and not os.path.isfile(return_path):
         report ('%s not found.' % path, out=True)
@@ -108,10 +113,10 @@ def init_eval():
 def init_spice(fits_file, kernel_file, ref_frame, spacecraft, abcorr='LT+S'):
     #adapted from Benjamin Sharkey's spiceypy code
     spice.kclear()
-    kwex_dir = os.getcwd()
+    cwd = os.getcwd()
     os.chdir(os.path.dirname(kernel_file))
     spice.furnsh(kernel_file)
-    os.chdir(kwex_dir)
+    os.chdir(cwd)
     
     with fits.open(fits_file) as f:
         hdr = f[0].header
@@ -150,23 +155,32 @@ fits_file = fix_path(get_arg('-f', req=True), exist=True)
 vm_file = fix_path(get_arg('-v', req=True), exist=True)
 pds3_file = fix_path(get_arg('-l', '%s/%s.lbl' % (os.path.dirname(fits_file), os.path.splitext(os.path.basename(fits_file))[0])), exist = get_arg('-l', flag=True))
 out_file = fix_path(get_arg('-o', '%s/%s.xml' % (os.path.dirname(fits_file), os.path.splitext(os.path.basename(fits_file))[0])))
-kernel_file = fix_path(get_arg('-s', 'spice/nh_v06.tm'), exist=True)
-sp_calc_file = fix_path(get_arg('-c', 'spice/spice_calcs.json'), exist=True)
+kernel_file = fix_path(get_arg('-s', 'spice/nh_v06.tm'), kwex_dir=True, exist=True)
+sp_calc_file = fix_path(get_arg('-c', 'spice/spice_calcs.json'), kwex_dir=True, exist=True)
 ref_frame = get_arg('-rf', 'J2000')
 spacecraft = get_arg('-sc', 'NH')
 
 #compile Velocity engine Java class
-with open(fix_path('java/VMtoXML.txt', exist=True)) as f:
-    java_file = f.read()
+json_file = fix_path('tmp/vals.json', kwex_dir=True)
+java_file = fix_path('java/VMtoXML.java', kwex_dir=True)
+javac_file = fix_path('java/VMtoXML.class', kwex_dir=True)
 
-java_file = java_file.replace('template_file_path', os.path.dirname(vm_file).replace('\\', '/')).replace('template_file_name', os.path.basename(vm_file).replace('\\', '/')).replace('output_file_name', out_file.replace('\\', '/'))
-with open(fix_path('java/VMtoXML.java'), 'w') as f:
-    q = f.write(java_file)
+with open(java_file) as f:
+    java_str = f.read()
 
-javac_args = ['javac', '-cp', ' .;velocity-1.7.jar;velocity-tools-2.0.jar;jackson-core-2.9.9.jar;jackson-databind-2.9.9.jar', 'VMtoXML.java']
-while not os.path.isfile('java/VMtoXML.java'):
-    pass
-p = Popen(javac_args, cwd=fix_path('java'), shell=True)
+if not json_file == re.search(r'String jsonValFile = "(.*?)";', java_str).group(1):
+    java_repl = True
+    with open(java_file, 'w') as f:
+        new_java_str = java_str.replace(re.search(r'String jsonValFile = "(.*?)";', java_str).group(1), json_file.replace('\\', '/'))
+        q = f.write(new_java_str)
+else:
+    java_repl = False
+
+if java_repl or not os.path.isfile(javac_file):
+    if os.path.isfile(javac_file):
+        os.remove(javac_file)
+    javac_args = ['javac', '-cp', ' .;velocity-1.7.jar;velocity-tools-2.0.jar;jackson-core-2.9.9.jar;jackson-databind-2.9.9.jar', 'VMtoXML.java']
+    p = Popen(javac_args, cwd=fix_path('java', kwex_dir=True), shell=True)
 
 #get variables from template
 with open(vm_file) as f:
@@ -284,11 +298,15 @@ if spice_list:
         report('meta kernel file %s not found' % kernel_file, out=True)
 
 #write temporary *.json file to feed into velocity engine
-with open(fix_path('tmp/vals.json'), 'w') as f:
+os.makedirs(fix_path('tmp', kwex_dir=True), exist_ok=True)
+val_list['template_file_path'] = os.path.dirname(vm_file).replace('\\', '/')
+val_list['template_file_name'] = os.path.basename(vm_file).replace('\\', '/')
+val_list['output_file_name'] = out_file.replace('\\', '/')
+with open(fix_path('tmp/vals.json', kwex_dir=True), 'w') as f:
     q = json.dump(val_list, f)
 
 #run java script to activate velocity engine
 java_args = ['java', '-cp', '.;velocity-1.7.jar;velocity-tools-2.0.jar;jackson-core-2.9.9.jar;jackson-databind-2.9.9.jar;jackson-annotations-2.9.9.jar;commons-collections-3.2.2.jar;commons-lang-2.4.jar', 'VMtoXML']
 while not os.path.isfile('java/VMtoXML.class'):
     pass
-p = Popen(java_args, cwd=fix_path('java'), shell=True)
+p = Popen(java_args, cwd=fix_path('java', kwex_dir=True), shell=True)
