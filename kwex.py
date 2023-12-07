@@ -1,6 +1,5 @@
 import os
 import regex as re
-from collections import defaultdict
 from subprocess import Popen
 import sys
 import simpleeval
@@ -9,6 +8,7 @@ import spiceypy as spice
 import numpy as np
 from astropy.io import fits
 import argparse
+from glob import glob
 
 #methods
 
@@ -20,15 +20,20 @@ def report(msg, out=False):
         print('kwex exited without finishing.')
         sys.exit()
 
-def add_to_val(vtype, kw, val, file=None, except_val='KEYWORD VALUE NOT FOUND'):
+def add_to_val(vtype, kw, val=None, fnc_var=None, val_fnc=None, file=None, except_val='KEYWORD VALUE NOT FOUND'):
     if vtype not in val_list:
         val_list[vtype] = {}
 
-    try:
-        val_list[vtype][kw] = val
-    except:
-        val_list[vtype][kw] = except_val
-        report('keyword %s not found in %s' % (kw, file))
+    if val_fnc:
+        if not fnc_var:
+            fnc_var = kw
+        try:
+            val = val_fnc(fnc_var)
+        except:
+            val = except_val
+            report('keyword %s not found in %s' % (kw, file))
+
+    val_list[vtype][kw] = val
 
 def fix_path(path, kwex_dir=False, exist=False):
     if kwex_dir:
@@ -250,7 +255,8 @@ if label_list and os.path.isfile(pds3_file):
     #record values of keywords found in template
     for kw in label_list:
         kd = '^' + kw[4:] if kw.startswith('PTR_') else kw #replace PTR_ in template with ^ because ^ in XML causes problems
-        add_to_val('label', kw, kv_dict[kd], file=pds3_file)
+        #add_to_val('label', kw, kv_dict[kd], file=pds3_file)
+        add_to_val('label', kw, fnc_var=kd, val_fnc=lambda x: kv_dict[x], file=pds3_file)
 elif label_list and not os.path.isfile(pds3_file):
     report('PDS3 keywords found in %s but PDS3 label %s not found.' % (vm_file, pds3_file), out=True)
 
@@ -266,18 +272,13 @@ if fits_list:
         ext = int(ext) if ext.isnumeric() else 0
 
         #find iterative FITS keywords
-        val = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
-        if len(val) == 1:
-            val = val[0]
-        elif len(val) == 0:
-            try:
-                val = hdr_list[ext][kw]
-                #catch non-iterative keywords with digits, like NAXIS1
-            except:
-                pass
+        iter_list = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
 
         #record values of template keywords
-        add_to_val(fx[1:], kw, val, file=fits_file)
+        if len(iter_list) > 1:
+            add_to_val(fx[1:], kw, val=iter_list, file=fits_file)
+        else:
+            add_to_val(fx[1:], kw, val_fnc=lambda x: hdr_list[ext][x], file=fits_file)
         
 #calculate values for SPICE keywords
 if spice_list:
@@ -295,12 +296,7 @@ if spice_list:
 
         for kw in spice_list:
             #se.eval translates str formulations of spice functions into something evaluable
-            try:
-                val = se.eval(spice_calc[kw])
-            except:
-                val = 'KEYWORD NOT RECALCULATED'
-                report('%s keyword could not be recalculated' % kw)
-            add_to_val('spice', kw, val)
+            add_to_val('spice', kw, val_fnc=lambda x: se.eval(spice_calc[x]), file=sp_calc_file, except_val='KEYWORD NOT RECALCULATED')
     else:
         report('meta kernel file %s not found' % kernel_file, out=True)
 
