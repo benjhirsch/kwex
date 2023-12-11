@@ -53,10 +53,12 @@ def fix_path(path, kwex_dir=False, exist=False):
 
 def add_kv(kvd, k, v):
     if isinstance(v, str):
-        if re.match(r'\((.*)?\)', v.strip()):
+        if re.match(r'(\((.*)?\))|(\{(.*)?\})', v.strip()):
             #separate parenthetical lists into lists
-            v = [e.strip() for e in v.strip()[1:-1].split(',')]
-        elif re.search(r'<\w+>', v):
+            listv = [e.strip() for e in v.strip()[1:-1].split(',')]
+            #send each element through add_kv individually
+            v = [add_kv({}, n, elem)[n] for n, elem in enumerate(listv)]
+        elif not v.startswith('"') and re.search(r'<\w+>', v):
             #turn values of the form "VALUE <UNIT>" into dictionaries with value and unit keys
             try:
                 v = {'value': re.search(r'^(.*?)\s*<.*?>', v).group(1), 'unit': re.search(r'<\w+>', v).group(0)[1:-1]}
@@ -220,6 +222,7 @@ val_list = {'label': {}, 'fits': {}, 'spice': {}}
 if label_list and os.path.isfile(pds3_file):
     kv_dict = {}
     ostack = []
+    mchar = {'(': ')', '{': '}', '"': '"'}
     
     with open(pds3_file) as f:
         lbl_lines = [line for line in f]
@@ -229,15 +232,17 @@ if label_list and os.path.isfile(pds3_file):
         k, v = ([p.strip() for p in line.split('=')][:2] + [None]*2)[:2]
 
         if v:
-            #multi-line values will start with either a parenthesis or double quote
-            if v.startswith(('(', '"')):
-                ml_count = n+1
-                while '=' not in lbl_lines[ml_count]:
-                    #when you encounter a multi-line value, iterate through label until you get to the next kw=value line
-                    if lbl_lines[ml_count].strip() not in ['END', '']:
-                        #and add each line to the previous one
-                        v = ' '.join([v, lbl_lines[ml_count].strip()])
+            #multi-line values will start with (, {, or "
+            if v.startswith(tuple(mchar.keys())):
+                mstop = mchar[v[0]] #multi-line ends with closing version of what it opened with
+                ml_count = n
+                current_line = v
+                while mstop not in current_line or (ml_count == n and v == '"'):
+                    #iterate through lines until you get to the stop character, but make sure you keep going if the first line is just a "
                     ml_count += 1
+                    current_line = lbl_lines[ml_count].strip()
+                    v += ' %s' % current_line
+                    #and add each successive line to the multi-line value
             elif k == 'OBJECT':
                 #at the start of a new object, add to the object stack and return to the top of the loop
                 ostack.append([v, {}])
