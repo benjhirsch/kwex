@@ -193,7 +193,8 @@ else:
 if java_repl or not os.path.isfile(javac_file):
     if os.path.isfile(javac_file):
         os.remove(javac_file)
-    javac_args = ['javac', '-cp', ' .;velocity-1.7.jar;velocity-tools-2.0.jar;jackson-core-2.9.9.jar;jackson-databind-2.9.9.jar', 'VMtoXML.java']
+    jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar'])
+    javac_args = ['javac', '-cp', jar_files, 'VMtoXML.java']
     p = Popen(javac_args, cwd=fix_path('java', kwex_dir=True), shell=True)
 
 #get variables from template
@@ -311,10 +312,11 @@ val_list['template_file_path'] = os.path.dirname(vm_file).replace('\\', '/')
 val_list['template_file_name'] = os.path.basename(vm_file).replace('\\', '/')
 val_list['output_file_name'] = out_file.replace('\\', '/')
 with open(fix_path('tmp/vals.json', kwex_dir=True), 'w') as f:
-    q = json.dump(val_list, f)
+    q = json.dump(val_list, f, indent=4)
 
 #run java script to activate velocity engine
-java_args = ['java', '-cp', '.;velocity-1.7.jar;velocity-tools-2.0.jar;jackson-core-2.9.9.jar;jackson-databind-2.9.9.jar;jackson-annotations-2.9.9.jar;commons-collections-3.2.2.jar;commons-lang-2.4.jar', 'VMtoXML']
+jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar', 'jackson-annotations-2.9.9.jar', 'commons-collections-3.2.2.jar', 'commons-lang-2.4.jar'])
+java_args = ['java', '-cp', jar_files, 'VMtoXML']
 while not os.path.isfile('java/VMtoXML.class'):
     pass
 p = Popen(java_args, cwd=fix_path('java', kwex_dir=True), shell=True)
