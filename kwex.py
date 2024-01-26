@@ -22,10 +22,13 @@ def report(msg, out=False):
 
 def add_to_val(vtype, kw, val=None, fnc_var=None, val_fnc=None, file=None, except_val='KEYWORD VALUE NOT FOUND'):
     if vtype not in val_list:
+        #this will catch FITS extensions and anything else strange
         val_list[vtype] = {}
 
     if val_fnc:
+        #if there's a function in the arguments, generate val by running that function
         if not fnc_var:
+            #if no explicit function variable is given, use ke
             fnc_var = kw
         try:
             val = val_fnc(fnc_var)
@@ -46,8 +49,9 @@ def fix_path(path, kwex_dir=False, exist=False):
     else:
         return_path = os.path.normpath(os.path.join(fix_dir, path))
 
-    if exist and not os.path.isfile(return_path):
-        report ('%s not found.' % path, out=True)
+    if exist and not ('*' in return_path or os.path.isfile(return_path)):
+        #exit program if a file is required and not present and there's no wildcard
+        report ('%s not found.' % return_path, out=True)
     else:
         return return_path
 
@@ -150,29 +154,38 @@ parser.add_argument('-k', dest='kernel', metavar='spice kernel', default='spice/
 parser.add_argument('-c', dest='spice_calcs', metavar='spice calcs', default='spice/spice_calcs.json', help='Specifies a different spice calculations file.')
 parser.add_argument('-r', dest='ref_frame', metavar='reference frame', default='J2000', help='Specifies a different reference frame for SPICE. Default is J2000.')
 parser.add_argument('-s', dest='spacecraft', default='NH', help='Specifies a different spacecraft for SPICE. Default is NH (NEW HORIZONS).')
+parser.add_argument('-j', dest='keep_json', action='store_true', help='Include to not delete vals.json at end of program.')
 
 args = parser.parse_args()
 
 vm_file = fix_path(args.template, exist=True)
 
 fits_file = fix_path(args.fits, exist=True)
-fits_dir = os.path.dirname(fits_file)
-fits_fn = os.path.splitext(os.path.basename(fits_file))[0]
-
-if args.label:
-    pds3_file = fix_path(args.label, exist=True)
+fits_glob = glob(fits_file) #convert wildcard argument to list
+if len(fits_glob) == 0:
+    #if wildcard returns no files, quit
+    report('no files found in path %s' % fits_file, out=True)
 else:
-    pds3_file = fix_path('%s/%s.lbl' % (fits_dir, fits_fn), exist=True)
+    fits_file = fits_glob
 
-if args.output:
-    out_file = fix_path(args.ouput)
-else:
-    out_file = fix_path('%s/%s.xml' % (fits_dir, fits_fn))
+pds3_file = []
+out_file = []
 
-kernel_file = fix_path(args.kernel, kwex_dir=True, exist=True)
-sp_calc_file = fix_path(args.spice_calcs, kwex_dir=True, exist=True)
-ref_frame = args.ref_frame
-spacecraft = args.spacecraft
+for file in fits_file:
+    fits_dir = os.path.dirname(file)
+    fits_fn = os.path.splitext(os.path.basename(file))[0]
+
+    if args.label:
+        pds3_file.append(fix_path(args.label, exist=True))
+    else:
+        pds3_file.append(fix_path('%s/%s.lbl' % (fits_dir, fits_fn), exist=True))
+        #report('PDS3 label file: %s' % os.path.basename(pds3_file))
+
+    if args.output:
+        out_file.append(fix_path(args.output))
+    else:
+        out_file.append(fix_path('%s/%s.xml' % (fits_dir, fits_fn)))
+        #report('Output file: %s' % os.path.basename(out_file))
 
 #compile Velocity engine Java class
 json_file = fix_path('tmp/vals.json', kwex_dir=True)
@@ -182,27 +195,64 @@ javac_file = fix_path('java/VMtoXML.class', kwex_dir=True)
 with open(java_file) as f:
     java_str = f.read()
 
-if not json_file == re.search(r'String jsonValFile = "(.*?)";', java_str).group(1):
+if not json_file.replace('\\', '/') == re.search(r'String jsonValFile = "(.*?)";', java_str).group(1):
+    #if the specified json file is not in the .java file, rewrite the java with the new file name
     java_repl = True
     with open(java_file, 'w') as f:
         new_java_str = java_str.replace(re.search(r'String jsonValFile = "(.*?)";', java_str).group(1), json_file.replace('\\', '/'))
         q = f.write(new_java_str)
+    report('Rewriting Java class with reference to %s' % json_file)
 else:
     java_repl = False
 
 if java_repl or not os.path.isfile(javac_file):
+    #if the java was rewritten or there is no .class file, compile a new .class file
     if os.path.isfile(javac_file):
         os.remove(javac_file)
+        report('Recompiling Java class')
+    else:
+        report('Compiling Java class')
     jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar'])
     javac_args = ['javac', '-cp', jar_files, 'VMtoXML.java']
-    p = Popen(javac_args, cwd=fix_path('java', kwex_dir=True), shell=True)
+    p = Popen(javac_args, cwd=fix_path('java', kwex_dir=True))
 
 #get variables from template
 with open(vm_file) as f:
     vm_str = ''
+    vm_nows = ''
+    current_line = ''
+    in_velocity = False
+    open_char = ['(', '{', '[']
+    close_char = [')', '}', ']']
+
     for line in f:
         if '$' in line:
+            #we only need to get template lines that include variable pointers
             vm_str += line
+
+        #and write modified template with whitespace removed
+        lstrip = line.strip()
+        if not in_velocity:
+            if lstrip.startswith('#'):
+                #if at the start of a velocity code block, register that and don't add line
+                in_velocity = True
+            else:
+                #if not in a velocity code block, add line as normal
+                vm_nows += line
+
+        if in_velocity:
+            #if in a velocity code block, add this line to the overall current line
+            current_line += lstrip
+            if any([c in line for c in close_char]):
+                if sum([current_line.count(op) for op in open_char]) == sum([current_line.count(cl) for cl in close_char]):
+                    #if all parentheses are closed, get out of velocity code block
+                    in_velocity = False
+                    vm_nows += '%s##\n' % current_line
+                    current_line = ''
+
+with open(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))), 'w') as f:
+    q = f.write(vm_nows)
+    #record template with whitespace removed
 
 label_list = re.findall(r'\$label\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${label\.[\w\_\:]+}', vm_str)
 label_list = sorted([v.split('.')[-1].replace('}', '') for v in set(label_list)])
@@ -214,109 +264,123 @@ report('%s FITS keywords found in %s' % (len(fits_list), vm_file))
 
 spice_list = re.findall(r'\$spice\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${\spice\.[\w\_\:]+}', vm_str)
 spice_list = sorted([v.split('.')[-1].replace('}', '') for v in set(spice_list)])
-report('%s SPICE keywords found in %s' % (len(label_list), vm_file))
+report('%s SPICE keywords found in %s' % (len(spice_list), vm_file))
 
-#initialize list to hold extracted values for each keyword
-val_list = {'label': {}, 'fits': {}, 'spice': {}}
+for file_count, file in enumerate(fits_file):
+    #initialize list to hold extracted values for each keyword
+    val_list = {'label': {}, 'fits': {}, 'spice': {}}
 
-#get pds3 label keyword values
-if label_list and os.path.isfile(pds3_file):
-    kv_dict = {}
-    ostack = []
-    mchar = {'(': ')', '{': '}', '"': '"'}
-    
-    with open(pds3_file) as f:
-        lbl_lines = [line for line in f]
+    #get pds3 label keyword values
+    if label_list and os.path.isfile(pds3_file[file_count]):
+        kv_dict = {}
+        ostack = []
+        mchar = {'(': ')', '{': '}', '"': '"'}
+        
+        with open(pds3_file[file_count]) as f:
+            lbl_lines = [line for line in f]
 
-    for n, line in enumerate(lbl_lines):
-        #split each line into tidy keyword=value pairs
-        k, v = ([p.strip() for p in line.split('=')][:2] + [None]*2)[:2]
+        for n, line in enumerate(lbl_lines):
+            #split each line into tidy keyword=value pairs
+            k, v = ([p.strip() for p in line.split('=')][:2] + [None]*2)[:2]
 
-        if v:
-            #multi-line values will start with (, {, or "
-            if v.startswith(tuple(mchar.keys())):
-                mstop = mchar[v[0]] #multi-line ends with closing version of what it opened with
-                ml_count = n
-                current_line = v
-                while mstop not in current_line or (ml_count == n and v == '"'):
-                    #iterate through lines until you get to the stop character, but make sure you keep going if the first line is just a "
-                    ml_count += 1
-                    current_line = lbl_lines[ml_count].strip()
-                    v += ' %s' % current_line
-                    #and add each successive line to the multi-line value
-            elif k == 'OBJECT':
-                #at the start of a new object, add to the object stack and return to the top of the loop
-                ostack.append([v, {}])
-                continue
-            elif k == 'END_OBJECT':
-                k, v = ostack.pop()
-                #at the end of an object, remove the most recent object from the stack and assign it to the kw=val pair
+            if v:
+                #multi-line values will start with (, {, or "
+                if v.startswith(tuple(mchar.keys())):
+                    mstop = mchar[v[0]] #multi-line ends with closing version of what it opened with
+                    ml_count = n
+                    current_line = v
+                    while mstop not in current_line or (ml_count == n and v == '"'):
+                        #iterate through lines until you get to the stop character, but make sure you keep going if the first line is just a "
+                        ml_count += 1
+                        current_line = lbl_lines[ml_count].strip()
+                        v += ' %s' % current_line
+                        #and add each successive line to the multi-line value
+                elif k == 'OBJECT':
+                    #at the start of a new object, add to the object stack and return to the top of the loop
+                    ostack.append([v, {}])
+                    continue
+                elif k == 'END_OBJECT':
+                    k, v = ostack.pop()
+                    #at the end of an object, remove the most recent object from the stack and assign it to the kw=val pair
 
-            if ostack:
-                ostack[-1][-1] = add_kv(ostack[-1][-1], k, v)
-                #if we're in an object, this line's kw=val pair is added to the object instead of the label dictionary
+                if ostack:
+                    ostack[-1][-1] = add_kv(ostack[-1][-1], k, v)
+                    #if we're in an object, this line's kw=val pair is added to the object instead of the label dictionary
+                else:
+                    kv_dict = add_kv(kv_dict, k, v)
+                                
+        #record values of keywords found in template
+        for kw in label_list:
+            kd = '^' + kw[4:] if kw.startswith('PTR_') else kw #replace PTR_ in template with ^ because ^ in XML causes problems
+            kd = kd.replace('_COLON_', ':') #replace _COLON_ with : in template because Java variables can't have : in them
+            #add_to_val('label', kw, kv_dict[kd], file=pds3_file)
+            add_to_val('label', kw, fnc_var=kd, val_fnc=lambda x: kv_dict[x], file=pds3_file)
+    elif label_list and not os.path.isfile(pds3_file):
+        report('PDS3 keywords found in %s but PDS3 label %s not found.' % (vm_file, pds3_file), out=True)
+
+    #get FITS header keyword values
+    if fits_list:
+        with fits.open(file) as f:
+            hdr_list = [h.header for h in f]
+            
+        for fv in fits_list:
+            #identify FITS keyword extension, with none being 0
+            fx, kw = fv.split('.')
+            ext = re.sub(r'[^\d]', '', fx)
+            ext = int(ext) if ext.isnumeric() else 0
+
+            #find iterative FITS keywords
+            iter_list = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
+
+            #record values of template keywords
+            if len(iter_list) > 1:
+                add_to_val(fx[1:], kw, val=iter_list, file=file)
             else:
-                kv_dict = add_kv(kv_dict, k, v)
-                             
-    #record values of keywords found in template
-    for kw in label_list:
-        kd = '^' + kw[4:] if kw.startswith('PTR_') else kw #replace PTR_ in template with ^ because ^ in XML causes problems
-        #add_to_val('label', kw, kv_dict[kd], file=pds3_file)
-        add_to_val('label', kw, fnc_var=kd, val_fnc=lambda x: kv_dict[x], file=pds3_file)
-elif label_list and not os.path.isfile(pds3_file):
-    report('PDS3 keywords found in %s but PDS3 label %s not found.' % (vm_file, pds3_file), out=True)
+                add_to_val(fx[1:], kw, val_fnc=lambda x: hdr_list[ext][x], file=file)
+            
+    #calculate values for SPICE keywords
+    if spice_list:
+        kernel_file = fix_path(args.kernel, kwex_dir=True, exist=True)
+        sp_calc_file = fix_path(args.spice_calcs, kwex_dir=True, exist=True)
+        ref_frame = args.ref_frame
+        spacecraft = args.spacecraft
 
-#get FITS header keyword values
-if fits_list:
-    with fits.open(fits_file) as f:
-        hdr_list = [h.header for h in f]
-        
-    for fv in fits_list:
-        #identify FITS keyword extension, with none being 0
-        fx, kw = fv.split('.')
-        ext = re.sub(r'[^\d]', '', fx)
-        ext = int(ext) if ext.isnumeric() else 0
+        if os.path.exists(kernel_file):
+            target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(fits_file, kernel_file, ref_frame, spacecraft)
+            se = init_eval()
 
-        #find iterative FITS keywords
-        iter_list = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
+            with open(sp_calc_file) as f:
+                spice_calc = json.load(f)
+                #SPICE formulas adapted from Benjamin Sharkey's spiceypy code
 
-        #record values of template keywords
-        if len(iter_list) > 1:
-            add_to_val(fx[1:], kw, val=iter_list, file=fits_file)
+            #removes namespaces from numpy and spice functions because otherwise they don't work with simpleeval
+            for k in spice_calc:
+                spice_calc[k] = spice_calc[k].replace('np.', '').replace('spice.', '')
+
+            for kw in spice_list:
+                #se.eval translates str formulations of spice functions into something evaluable
+                add_to_val('spice', kw, val_fnc=lambda x: se.eval(spice_calc[x]), file=sp_calc_file, except_val='KEYWORD NOT RECALCULATED')
         else:
-            add_to_val(fx[1:], kw, val_fnc=lambda x: hdr_list[ext][x], file=fits_file)
-        
-#calculate values for SPICE keywords
-if spice_list:
-    if os.path.exists(kernel_file):
-        target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(fits_file, kernel_file, ref_frame, spacecraft)
-        se = init_eval()
+            report('meta kernel file %s not found' % kernel_file, out=True)
 
-        with open(sp_calc_file) as f:
-            spice_calc = json.load(f)
-            #SPICE formulas adapted from Benjamin Sharkey's spiceypy code
+    #write temporary *.json file to feed into velocity engine
+    os.makedirs(fix_path('tmp', kwex_dir=True), exist_ok=True)
+    val_list['template_file_path'] = os.path.dirname(vm_file).replace('\\', '/')
+    val_list['template_file_name'] = 'nows_' + os.path.basename(vm_file).replace('\\', '/')
+    val_list['output_file_name'] = out_file[file_count].replace('\\', '/')
+    with open(fix_path('tmp/vals.json', kwex_dir=True), 'w') as f:
+        q = json.dump(val_list, f, indent=4)
 
-        #removes namespaces from numpy and spice functions because otherwise they don't work with simpleeval
-        for k in spice_calc:
-            spice_calc[k] = spice_calc[k].replace('np.', '').replace('spice.', '')
+    #run java script to activate velocity engine
+    jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar', 'jackson-annotations-2.9.9.jar', 'commons-collections-3.2.2.jar', 'commons-lang-2.4.jar'])
+    java_args = ['java', '-cp', jar_files, 'VMtoXML']
+    while not os.path.isfile('java/VMtoXML.class'):
+        pass
+    p = Popen(java_args, cwd=fix_path('java', kwex_dir=True))
 
-        for kw in spice_list:
-            #se.eval translates str formulations of spice functions into something evaluable
-            add_to_val('spice', kw, val_fnc=lambda x: se.eval(spice_calc[x]), file=sp_calc_file, except_val='KEYWORD NOT RECALCULATED')
-    else:
-        report('meta kernel file %s not found' % kernel_file, out=True)
-
-#write temporary *.json file to feed into velocity engine
-os.makedirs(fix_path('tmp', kwex_dir=True), exist_ok=True)
-val_list['template_file_path'] = os.path.dirname(vm_file).replace('\\', '/')
-val_list['template_file_name'] = os.path.basename(vm_file).replace('\\', '/')
-val_list['output_file_name'] = out_file.replace('\\', '/')
-with open(fix_path('tmp/vals.json', kwex_dir=True), 'w') as f:
-    q = json.dump(val_list, f, indent=4)
-
-#run java script to activate velocity engine
-jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar', 'jackson-annotations-2.9.9.jar', 'commons-collections-3.2.2.jar', 'commons-lang-2.4.jar'])
-java_args = ['java', '-cp', jar_files, 'VMtoXML']
-while not os.path.isfile('java/VMtoXML.class'):
-    pass
-p = Popen(java_args, cwd=fix_path('java', kwex_dir=True), shell=True)
+    #delete temporary files once velocity has finished
+    while p.poll() is None:
+        pass
+    os.remove(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))))
+    if not args.keep_json:
+        os.remove(fix_path('tmp/vals.json', kwex_dir=True))
