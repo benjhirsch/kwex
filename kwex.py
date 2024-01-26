@@ -28,7 +28,7 @@ def add_to_val(vtype, kw, val=None, fnc_var=None, val_fnc=None, file=None, excep
     if val_fnc:
         #if there's a function in the arguments, generate val by running that function
         if not fnc_var:
-            #if no explicit function variable is given, use ke
+            #if no explicit function variable is given, use kw
             fnc_var = kw
         try:
             val = val_fnc(fnc_var)
@@ -310,7 +310,7 @@ for file_count, file in enumerate(fits_file):
                     kv_dict = add_kv(kv_dict, k, v)
                                 
         #record values of keywords found in template
-        with open('c:/users/auton/documents/github/kwex/pds3/var_sub.json') as sf:
+        with open(fix_path('pds3/var_sub.json', kwex_dir=True)) as sf:
             #load PDS3 keyword variable substitution file
             var_sub = json.load(sf)
 
@@ -353,7 +353,7 @@ for file_count, file in enumerate(fits_file):
         spacecraft = args.spacecraft
 
         if os.path.exists(kernel_file):
-            target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(fits_file, kernel_file, ref_frame, spacecraft)
+            target_state, target_state2, target_EARTH_state, target_SUN_state, sol_pos, helio_state, geo_state, i2j_mat, j2i_mat, fits_target_ID = init_spice(file, kernel_file, ref_frame, spacecraft)
             se = init_eval()
 
             with open(sp_calc_file) as f:
@@ -381,7 +381,7 @@ for file_count, file in enumerate(fits_file):
     #run java script to activate velocity engine
     jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar', 'jackson-annotations-2.9.9.jar', 'commons-collections-3.2.2.jar', 'commons-lang-2.4.jar'])
     java_args = ['java', '-cp', jar_files, 'VMtoXML']
-    while not os.path.isfile('java/VMtoXML.class'):
+    while not os.path.isfile('java/VMtoXML.java'):
         pass
     p = Popen(java_args, cwd=fix_path('java', kwex_dir=True))
 
