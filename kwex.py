@@ -310,13 +310,20 @@ for file_count, file in enumerate(fits_file):
                     kv_dict = add_kv(kv_dict, k, v)
                                 
         #record values of keywords found in template
+        with open('c:/users/auton/documents/github/kwex/pds3/var_sub.json') as sf:
+            #load PDS3 keyword variable substitution file
+            var_sub = json.load(sf)
+
+        sub_check = {'start': lambda x: '^%s' % x, 'in': lambda x: x, 'end': lambda x: '%s$' % x}
         for kw in label_list:
-            kd = '^' + kw[4:] if kw.startswith('PTR_') else kw #replace PTR_ in template with ^ because ^ in XML causes problems
-            kd = kd.replace('_COLON_', ':') #replace _COLON_ with : in template because Java variables can't have : in them
-            #add_to_val('label', kw, kv_dict[kd], file=pds3_file)
-            add_to_val('label', kw, fnc_var=kd, val_fnc=lambda x: kv_dict[x], file=pds3_file)
-    elif label_list and not os.path.isfile(pds3_file):
-        report('PDS3 keywords found in %s but PDS3 label %s not found.' % (vm_file, pds3_file), out=True)
+            kd = kw
+            for sub in var_sub:
+                #for each possible variable substitution, check if the Java sub is in the right place, then replace with PDS3 original
+                kd = re.sub(sub_check[var_sub[sub]['pos']](sub), var_sub[sub]['sub'], kd)
+            add_to_val('label', kw, fnc_var=kd, val_fnc=lambda x: kv_dict[x], file=pds3_file[file_count])
+
+    elif label_list and not os.path.isfile(pds3_file[file_count]):
+        report('PDS3 keywords found in %s but PDS3 label %s not found.' % (vm_file, pds3_file[file_count]), out=True)
 
     #get FITS header keyword values
     if fits_list:
