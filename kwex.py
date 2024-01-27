@@ -243,12 +243,11 @@ with open(vm_file) as f:
         if in_velocity:
             #if in a velocity code block, add this line to the overall current line
             current_line += lstrip
-            if any([c in line for c in close_char]):
-                if sum([current_line.count(op) for op in open_char]) == sum([current_line.count(cl) for cl in close_char]):
-                    #if all parentheses are closed, get out of velocity code block
-                    in_velocity = False
-                    vm_nows += '%s##\n' % current_line
-                    current_line = ''
+            if (any([c in line for c in close_char]) and sum([current_line.count(op) for op in open_char]) == sum([current_line.count(cl) for cl in close_char])) or (any([lstrip == c for c in ['#end', '#else']])):
+                #if all parentheses are closed or there's an #end or #else statement, get out of velocity code block
+                in_velocity = False
+                vm_nows += '%s##\n' % current_line
+                current_line = ''
 
 with open(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))), 'w') as f:
     q = f.write(vm_nows)
@@ -388,6 +387,7 @@ for file_count, file in enumerate(fits_file):
     #delete temporary files once velocity has finished
     while p.poll() is None:
         pass
-    os.remove(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))))
     if not args.keep_json:
         os.remove(fix_path('tmp/vals.json', kwex_dir=True))
+
+os.remove(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))))
