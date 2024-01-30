@@ -33,17 +33,29 @@ Optional Parameters
 
 -o <path to output file>    Specifies a different name for the output file.
 
+-x output extension         Specifies the output file extension (when not
+                            provided by -o). Default is xml.
+
 -d                          Prints some minimal debugging to the console.
 
--s <path to meta kernel>    Include to calculate SPICE keywords.
+-j                          Include to not delete vals.json file at end of
+                            program.
 
--rf <reference frame>       Specifies a different reference frame for SPICE.
+-k <path to meta kernel>    Include to calculate SPICE keywords.
+
+-c <path to spicecalc file> Specifies a different spice calculations file.
+
+-r <reference frame>        Specifies a different reference frame for SPICE.
                             Default is J2000.
 							
--sc <spacecraft>            Specifies a different spacecraft for SPICE.
+-s <spacecraft>             Specifies a different spacecraft for SPICE.
                             Default is NH (NEW HORIZONS).
 							
--h, --help                  Print this file to the console.
+-h, --help                  Prints usage and optional parameters.
+
+
+You can use wildcards (*) in the FITS file path to run kwex on multiple files
+at once and produce an output PDS4 label for each one.
 
 
 Velocity Template File
@@ -99,6 +111,27 @@ stored in the appropriate pointer as arrays and can be accessed like so:
 
 $label.KEYWORD[index] (0-indexed)
 
+For keywords with a <unit> in their value, the numeric value and unit are
+accessed separately in the template file. To get the value, write:
+
+$label.KEYWORD.value
+
+To get the <unit>, write:
+
+$label.KEYWORD.unit
+
+Some PDS3 keywords are not valid variable names in Velocity/Java. To point to
+these keywords in a template, a substitute variable name is required. Common
+substitutes are defined in pds3/var_sub.json. More substitutes can be added
+to this file. Each entry begins with a substitute string that will be used in
+the template file, followed by the "pos" parameter, which indicates where the
+substitute string appears in a variable name ("start", "in", or "end"), and
+the "sub" parameter, which is the string in the PDS3 keyword that needs
+replacing.
+
+For example, PDS3 keywords such as "^Header" are not valid variable names in
+Java due to the ^ character. The first entry in var_sub.json indicates that you
+can subtitute in "PTR_" in place of ^ at the beginning of a variable name.
 
 SPICE Keywords
 ==============

@@ -155,6 +155,7 @@ parser.add_argument('-c', dest='spice_calcs', metavar='spice calcs', default='sp
 parser.add_argument('-r', dest='ref_frame', metavar='reference frame', default='J2000', help='Specifies a different reference frame for SPICE. Default is J2000.')
 parser.add_argument('-s', dest='spacecraft', default='NH', help='Specifies a different spacecraft for SPICE. Default is NH (NEW HORIZONS).')
 parser.add_argument('-j', dest='keep_json', action='store_true', help='Include to not delete vals.json at end of program.')
+parser.add_argument('-x', dest='ext', metavar='output extension', default='xml', help='Specifies the output file extension (when not provided by -o). Default is .xml.')
 
 args = parser.parse_args()
 
@@ -184,7 +185,7 @@ for file in fits_file:
     if args.output:
         out_file.append(fix_path(args.output))
     else:
-        out_file.append(fix_path('%s/%s.xml' % (fits_dir, fits_fn)))
+        out_file.append(fix_path('%s/%s.%s' % (fits_dir, fits_fn, args.ext)))
         #report('Output file: %s' % os.path.basename(out_file))
 
 #compile Velocity engine Java class
