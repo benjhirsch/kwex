@@ -57,17 +57,24 @@ def fix_path(path, kwex_dir=False, exist=False):
 
 def add_kv(kvd, k, v):
     if isinstance(v, str):
-        if re.match(r'(\((.*)?\))|(\{(.*)?\})', v.strip()):
+        if re.match(r'(\((.*)?\))|(\{(.*)?\})', v.strip()): #string enclosed in parantheses or curly brackets
             #separate parenthetical lists into lists
             listv = [e.strip() for e in v.strip()[1:-1].split(',')]
             #send each element through add_kv individually
             v = [add_kv({}, n, elem)[n] for n, elem in enumerate(listv)]
-        elif not v.startswith('"') and re.search(r'<\w+>', v):
+        elif not v.startswith('"') and re.search(r'<\w+>', v): #1+ alphanumeric characters enclosed in angle brackets
             #turn values of the form "VALUE <UNIT>" into dictionaries with value and unit keys
             try:
-                v = {'value': re.search(r'^(.*?)\s*<.*?>', v).group(1), 'unit': re.search(r'<\w+>', v).group(0)[1:-1]}
+                v = {'value': re.search(r'^(.*?)\s*<.*?>', v).group(1), 'unit': re.search(r'<\w+>', v).group(0)[1:-1]} #the string before whitespace and characters enclosed in angle brackets, plus 1+ alphanumeric characters enclosed in angle brackets
             except:
                 pass
+        else:
+            #reserved XML character replacement
+            xml_dict = {'&': 'amp', '<': 'lt', '>': 'gt'}
+            for c in xml_dict:
+                pattern = r'\%s(?!.*;)' % c #reserved character not followed by 0+ other characters and then a semi-colon
+                v = re.sub(pattern, '&%s;' % xml_dict[c], v)
+
     if k in kvd:
         #if a keyword is already in the dictionary, either turn the value into a list or add to the value list already there
         if not isinstance(kvd[k], list):
@@ -196,7 +203,7 @@ javac_file = fix_path('java/VMtoXML.class', kwex_dir=True)
 with open(java_file) as f:
     java_str = f.read()
 
-if not json_file.replace('\\', '/') == re.search(r'String jsonValFile = "(.*?)";', java_str).group(1):
+if not json_file.replace('\\', '/') == re.search(r'String jsonValFile = "(.*?)";', java_str).group(1): #the string following String jsonValFile = and preceding a semi-colon
     #if the specified json file is not in the .java file, rewrite the java with the new file name
     java_repl = True
     with open(java_file, 'w') as f:
@@ -254,11 +261,11 @@ with open(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(v
     q = f.write(vm_nows)
     #record template with whitespace removed
 
-label_list = re.findall(r'\$label\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${label\.[\w\_\:]+}', vm_str)
+label_list = re.findall(r'\$label\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${label\.[\w\_\:]+}', vm_str) #$label. followed by 1+ alphanumeric characters, underscores, or colons + the same but with label.<alphanumeric characters> enclosed in curly brackets
 label_list = sorted([v.split('.')[-1].replace('}', '') for v in set(label_list)])
 report('%s PDS3 label keywords found in %s' % (len(label_list), vm_file))
 
-fits_list = re.findall(r'\$fits\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${fits\.[\w\_\:]+}', vm_str) + re.findall(r'\$fits\_ext\d+\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${fits\_ext\d+\.[\w\_\:]+}', vm_str)
+fits_list = re.findall(r'\$fits\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${fits\.[\w\_\:]+}', vm_str) + re.findall(r'\$fits\_ext\d+\.[\w\_\:]+(?![\w\_])', vm_str) + re.findall(r'\${fits\_ext\d+\.[\w\_\:]+}', vm_str) #as above (but with fits), plus fits_ext<1+ digits>
 fits_list = sorted(set([v.replace('{', '').replace('}', '') for v in fits_list]))
 report('%s FITS keywords found in %s' % (len(fits_list), vm_file))
 
@@ -333,7 +340,7 @@ for file_count, file in enumerate(fits_file):
         for fv in fits_list:
             #identify FITS keyword extension, with none being 0
             fx, kw = fv.split('.')
-            ext = re.sub(r'[^\d]', '', fx)
+            ext = re.sub(r'[^\d]', '', fx) #sub out digits
             ext = int(ext) if ext.isnumeric() else 0
 
             #find iterative FITS keywords
