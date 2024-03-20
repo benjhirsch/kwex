@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.StringWriter;
@@ -22,17 +23,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VMtoXML {
     public static void main(String[] args) {
-        String jsonValFile = "C:/Users/auton/Documents/GitHub/kwex/tmp/vals.json";
+		// some comments
+		// more comments
+        String jsonValFile = args[0];
+        String tmpFilePath = args[1];
+        String tmpFileName = args[2];
+        String outFileName = args[3];
 
         try {
             ObjectMapper objMpr = new ObjectMapper();
             JsonNode rootNode = objMpr.readTree(new File(jsonValFile));
-
             Map<String, Object> valMap = jsonToMap(rootNode);
-
-            String tmpFilePath = valMap.get("template_file_path").toString();
-            String tmpFileName = valMap.get("template_file_name").toString();
-            String outFileName = valMap.get("output_file_name").toString();
 
             VelocityEngine velEng = new VelocityEngine();
             velEng.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
@@ -58,6 +59,7 @@ public class VMtoXML {
             } catch (IOException e) {
                     e.printStackTrace();
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

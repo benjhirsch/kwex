@@ -1,17 +1,18 @@
 Names
 =====
-target_state, target_lightTimes                 =   spice.spkezr(fits_target_ID, et, ref_frame, abcorr, spacecraft)
-target_state2, target_lightTimes2               =   spice.spkezr(spacecraft, et, ref_frame, abcorr, fits_target_ID)
-target_EARTH_state, target_EARTH_lightTimes     =   spice.spkezr(fits_target_ID, et, ref_frame, abcorr, 'EARTH')
-target_SUN_state, target_SUN_lightTimes         =   spice.spkezr(fits_target_ID, et, ref_frame, abcorr, 'SUN')
-sol_pos, sol_ltt                                =   spice.spkpos('Sun', et, instr_frame, abcorr, spacecraft)
-helio_state, helio_lightTimes                   =   spice.spkezr(spacecraft, et, ref_frame, abcorr, 'SUN')
-geo_state, geo_lightTimes                       =   spice.spkezr(spacecraft, et, ref_frame, abcorr, 'EARTH')
+ksp.state(target_body, obs_body)                =   spice.spkezr(target_body, set, ref_frame, 'LT+S', obs_body)[0]
+ksp.sol_phase_ang(target_body, obs_body)        =   spice.phaseq(et, target_body, 'SUN', obs_body, 'LT+S') * spice.dpr()
+ksp.subpoint('sc', 'lon')                       =   (spice.reclat(spice.subpnt('NEAR POINT/ELLIPSOID', hdr['SPCTCB'], et, body_frame, 'LT+S', spacecraft)[0])[1] * spice.dpr()) % 360
+ksp.subpoint('sc', 'lat')                       =   spice.reclat(spice.subpnt('NEAR POINT/ELLIPSOID', hdr['SPCTCB'], et, body_frame, 'LT+S', spacecraft)[0])[2] * spice.dpr()
+ksp.subpoint('solar', 'lon')                    =   (spice.reclat(spice.subslr('NEAR POINT/ELLIPSOID', hdr['SPCTCB'], et, body_frame, 'LT+S', spacecraft)[0])[1] * spice.dpr()) % 360
+ksp.subpoint('solar', 'lat')                    =   spice.reclat(spice.subslr('NEAR POINT/ELLIPSOID', hdr['SPCTCB'], et, body_frame, 'LT+S', spacecraft)[0])[2] * spice.dpr()
+sol_pos                                         =   spice.spkpos('Sun', et, instr_frame, 'LT+S', spacecraft)[0]
 i2j_mat                                         =   spice.pxform(instr_frame, ref_frame, et)
 j2i_mat                                         =   spice.pxform(ref_frame, instr_frame, et)
-fits_target_ID                                  =   SPCTCB
+target_pole_j2000_rec                           =   spice.radrec(1, *spice.bodeul(hdr['SPCSCID'], et)[:2]) or [0, 0, 1]
 minus_x_axis                                    =   [-1, 0, 0]
 j2000_north                                     =   [0, 0, 1]
+target_name                                     =   hdr['SPCTCB']
 
 Functions
 =========
@@ -22,4 +23,3 @@ spice.mxv
 spice.dpr
 spice.m2q
 spice.vnorm
-spice.bodn2c
