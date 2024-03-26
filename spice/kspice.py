@@ -4,22 +4,28 @@ import spiceypy as spice
 from astropy.io import fits
 import json
 
+#adapted from Benjamin Sharkey's spiceypy code
+
 class KwexSpice:
-    abcorr = 'LT+S'
+    abcorr = 'LT+S' #for now, this is a class variable and treated as a constant. we can make it an updateable property if we need to in the future.
     
+    #imports a list of body-fixed reference frames keyed to target names for use in surface geometry calculations
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'body_frames.json')) as f:
         body_frames = json.load(f)
 
+    #imports a list of FITS keywords used for initializing SPICE. Current list is based on NH FITS keywords and may not be universal.
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fits_spice_kws.json')) as f:
         spice_kw = json.load(f)
 
     def __init__(self, fits_file, kernel_file, ref_frame, spacecraft):
+        #spiceypy gets weird if you're not in the kernel directory
         spice.kclear()
         cwd = os.getcwd()
         os.chdir(os.path.dirname(kernel_file))
         spice.furnsh(kernel_file)
         os.chdir(cwd)
 
+        #get initial keywords from FITS file to initialize SPICE
         with fits.open(fits_file) as f:
             hdr = f[0].header
 
@@ -43,8 +49,10 @@ class KwexSpice:
         self._sol_pos = None
         self._target_pole_j2000_rec = None
 
+        #a default dictionary of empty state vectors of the form _state_dict[target_body][obs_body] so that once any particular state is calculated, it doesn't need to be recalculated
         self._state_dict = defaultdict(lambda: defaultdict(lambda: None))
 
+    #formulas that get reused are declared as properties with a gettr function that calculates the property the first time and simply returns it on subsequent calls
     @property
     def i2j_mat(self):
         if self._i2j_mat is None:
@@ -78,9 +86,11 @@ class KwexSpice:
             try:
                 self._target_pole_j2000_rec = spice.radrec(1, *spice.bodeul(self._spice_target_id, self._et)[:2])
             except:
+                #if the target doesn't have a defined pole, use this as a default
                 self._target_pole_j2000_rec = [0, 0, 1]
         return self._target_pole_j2000_rec
 
+    #state function encapsulates the various target_state, geo_state, etc. variables used in previous version
     def state(self, target_body, obs_body):
         if self._state_dict[target_body][obs_body] is not None:
             return self._state_dict[target_body][obs_body]
@@ -91,7 +101,12 @@ class KwexSpice:
                 pass
 
     def sol_phase_ang(self, target_body, obs_body):
-        return spice.phaseq(self._et, target_body, 'SUN', obs_body, KwexSpice.abcorr) * spice.dpr()
+        try:
+            phase_angle = spice.phaseq(self._et, target_body, 'SUN', obs_body, KwexSpice.abcorr) * spice.dpr()
+        except spice.SpiceBODIESNOTDISTINCT:
+            #if the sun is one of the two arguments, spice.phaseq fails, so return an angle of 0 degrees in that case
+            phase_angle = 0
+        return phase_angle
     
     def sub_point(self, sc_or_solar, lon_or_lat):
         if sc_or_solar == 'sc':

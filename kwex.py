@@ -1,6 +1,5 @@
 import os
 import regex as re
-from subprocess import Popen
 import sys
 import simpleeval
 import json
@@ -12,6 +11,7 @@ from glob import glob
 
 from spice import kspice
 from pds3 import pds3_parser
+from java import kjava
 
 #methods
 
@@ -81,17 +81,17 @@ def init_eval(ksp):
 #get command line arguments
 parser = argparse.ArgumentParser(description='KeyWord EXtraction tool for PDS3-to-PDS4 migration')
 
-parser.add_argument('-v', dest='template',required=True, help='<path to velocity template>')
+parser.add_argument('-v', metavar='template', dest='template',required=True, help='<path to velocity template>')
 parser.add_argument('-f', dest='fits', required=True, help='<path to fits file>')
 parser.add_argument('-l', dest='label', metavar='PDS3 label', help='Specifies a different name for the PDS3 label file.')
-parser.add_argument('-o', dest='output', help='Specifies a different name for the output file.')
+parser.add_argument('-o', metavar='output', dest='output', help='Specifies a different name for the output file.')
+parser.add_argument('-e', dest='ext', metavar='extension', default='xml', help='Specifies the output file extension (when not provided by -o). Default is .xml.')
 parser.add_argument('-d', dest='debug', action='store_true', help='Prints some minimal debugging to the console.')
-parser.add_argument('-k', dest='kernel', metavar='spice kernel', default='spice/nh_v06.tm', help='Include to calculate SPICE keywords.')
-parser.add_argument('-c', dest='spice_calcs', metavar='spice calcs', default='spice/spice_calcs.json', help='Specifies a different spice calculations file.')
-parser.add_argument('-r', dest='ref_frame', metavar='reference frame', default='J2000', help='Specifies a different reference frame for SPICE. Default is J2000.')
-parser.add_argument('-s', dest='spacecraft', default='NH', help='Specifies a different spacecraft for SPICE. Default is NH (NEW HORIZONS).')
-parser.add_argument('-j', dest='keep_json', action='store_true', help='Include to not delete vals.json at end of program.')
-parser.add_argument('-x', dest='ext', metavar='output extension', default='xml', help='Specifies the output file extension (when not provided by -o). Default is .xml.')
+parser.add_argument('--kernel', metavar='', default='spice/nh_v06.tm', help='Specifies a different SPICE kernel. Default is ./spice/nh_v06.tm')
+parser.add_argument('--calcs', metavar='', dest='spice_calcs', default='spice/spice_calcs.json', help='Specifies a different spice calculations file.')
+parser.add_argument('--ref', metavar='', dest='ref_frame', default='J2000', help='Specifies a different reference frame for SPICE. Default is J2000.')
+parser.add_argument('--sc', metavar='', dest='spacecraft', default='NH', help='Specifies a different spacecraft for SPICE. Default is NH (NEW HORIZONS).')
+parser.add_argument('--vals', dest='keep_json', action='store_true', help='Include to not delete vals.json at end of program.')
 
 args = parser.parse_args()
 
@@ -108,6 +108,7 @@ else:
 pds3_file = []
 out_file = []
 
+#if glob gets multiple fits files, name the corresponding pds3 and pds4 labels accordingly
 for file in fits_file:
     fits_dir = os.path.dirname(file)
     fits_fn = os.path.splitext(os.path.basename(file))[0]
@@ -124,16 +125,17 @@ for file in fits_file:
 
 #compile Velocity engine Java class
 json_file = fix_path('tmp/vals.json', kwex_dir=True)
-java_file = fix_path('java/VMtoXML.java', kwex_dir=True, exist=True)
-javac_file = fix_path('java/VMtoXML.class', kwex_dir=True)
+java_file = fix_path('java/%s.java' % kjava.CLASSNAME, kwex_dir=True, exist=True)
+javac_file = fix_path('java/%s.class' % kjava.CLASSNAME, kwex_dir=True)
 
 java_repl = False #for testing purposes only
+java_compile, compile_msg, system_java_version = kjava.compile_check(java_file, javac_file)
+for msg in compile_msg:
+    report(msg)
 
-if not os.path.isfile(javac_file) or os.path.getmtime(java_file) > os.path.getmtime(javac_file) or java_repl:
+if java_compile or java_repl:
     report('Compiling Velocity engine Java class...')
-    jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar'])
-    javac_args = ['javac', '-cp', jar_files, 'VMtoXML.java']
-    javac_process = Popen(javac_args, cwd=fix_path('java', kwex_dir=True))
+    javac_process = kjava.java_process('javac', '%s.java' % kjava.CLASSNAME, fix_path('java', kwex_dir=True), version=system_java_version)
 else:
     javac_process = None
 
@@ -238,14 +240,14 @@ for file_count, file in enumerate(fits_file):
         report('Calculating spice keywords...')
         if file_count == 0: #only need to initialize spice stuff once
             kernel_file = fix_path(args.kernel, kwex_dir=True, exist=True)
-            #check if kernel PATH_VALUE is relative or absolute and switch to absolute
+            #check if kernel PATH_VALUE is relative or wrong and switch to absolute and correct
             with open(kernel_file) as f:
                 kernel_str = f.read()
             kernel_path_value = re.search(r"PATH_VALUES\s+=\s+\(\n\s+'(.+)'", kernel_str).group(1)
-            if not os.path.isabs(kernel_path_value):
-                kernel_path_repl = os.path.normpath(os.path.join(os.path.dirname(kernel_file), 'data')).replace('\\', '/')
+            kernel_path_repl = os.path.normpath(os.path.join(os.path.dirname(kernel_file), 'data')).replace('\\', '/')
+            if not (os.path.isabs(kernel_path_value) or os.path.normpath(kernel_path_value).replace('\\', '/') == kernel_path_repl):
                 kernel_str_repl = re.sub(r"(?<=PATH_VALUES\s+=\s+\(\n\s+').+(?=')", kernel_path_repl, kernel_str)
-                report('Switching PATH_VALUE in %s from relative %s to absolute %s' % (os.path.basename(kernel_file), kernel_path_value, kernel_path_repl))
+                report('Switching PATH_VALUE in %s from %s to %s' % (os.path.basename(kernel_file), kernel_path_value, kernel_path_repl))
                 with open(kernel_file, 'w') as f:
                     q = f.write(kernel_str_repl)
 
@@ -276,23 +278,26 @@ for file_count, file in enumerate(fits_file):
         q = json.dump(val_list, f, indent=4)
 
     #run java script to activate velocity engine
-    jar_files = os.pathsep.join(['.', 'velocity-1.7.jar', 'velocity-tools-2.0.jar', 'jackson-core-2.9.9.jar', 'jackson-databind-2.9.9.jar', 'jackson-annotations-2.9.9.jar', 'commons-collections-3.2.2.jar', 'commons-lang-2.4.jar'])
+        
+    #set arguments to pass to java main
     template_file_path = os.path.dirname(vm_file).replace('\\', '/')
     template_file_name = 'nows_' + os.path.basename(vm_file).replace('\\', '/')
     output_file_name = out_file[file_count].replace('\\', '/')
-    
-    java_args = ['java', '-cp', jar_files, 'VMtoXML', json_file_n, template_file_path, template_file_name, output_file_name]
+
+    #wait until java class is compiled before proceeding
     while javac_process and javac_process.poll() is None:
         pass
     report('Activating velocity engine and writing PDS4 label %s...\n' % os.path.basename(out_file[file_count]))
-    velocity_process = Popen(java_args, cwd=fix_path('java', kwex_dir=True))
+    velocity_process = kjava.java_process('java', kjava.CLASSNAME, fix_path('java', kwex_dir=True), json_file_n, template_file_path, template_file_name, output_file_name)
 
 if not args.keep_json:
     json_list = glob('%s/*.json' % os.path.dirname(json_file))
+    #once velocity is done running, delete temporary json value files
     while velocity_process.poll() is None:
         pass
 
     for j in json_list:
         os.remove(j)
 
+#remove temporary template with whitespace removed
 os.remove(os.path.join(os.path.dirname(vm_file), 'nows_%s' % (os.path.basename(vm_file))))

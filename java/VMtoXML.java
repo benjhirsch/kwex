@@ -23,8 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VMtoXML {
     public static void main(String[] args) {
-		// some comments
-		// more comments
         String jsonValFile = args[0];
         String tmpFilePath = args[1];
         String tmpFileName = args[2];
