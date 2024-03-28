@@ -34,13 +34,11 @@ class KwexSpice:
         self._et = spice.scs2e(spice_sc_id, sclk)
 
         self._instr_frame = hdr[KwexSpice.spice_kw['instr_frame']]
-        self.spice_target_name = hdr[KwexSpice.spice_kw['spice_target_name']]
-        try:
-            self._spice_target_id = spice.bodn2c(self.spice_target_name)
-            self.spice_target_name = spice.bodc2n(self._spice_target_id)
-        except:
-            self._spice_target_id = None
-        
+        spice_target_name = hdr[KwexSpice.spice_kw['spice_target_name']]
+        fits_target_name = hdr[KwexSpice.spice_kw['fits_target_name']]
+
+        self._spice_target_id, self.spice_target_name = self.get_spice_id(spice_target_name, fits_target_name)
+
         self._ref_frame = ref_frame
         self.spacecraft = spacecraft
 
@@ -51,6 +49,21 @@ class KwexSpice:
 
         #a default dictionary of empty state vectors of the form _state_dict[target_body][obs_body] so that once any particular state is calculated, it doesn't need to be recalculated
         self._state_dict = defaultdict(lambda: defaultdict(lambda: None))
+
+    #fetch target spice ID from target spice name
+    def get_spice_id(self, target, backup_target=None):
+        try:
+            stid = spice.bodn2c(target)
+            stn = spice.bodc2n(stid)
+        except spice.NotFoundError:
+            #if name does not correspond to an ID (for example, because it's 'UNKNOWN', try a backup name)
+            stid, stn = self.get_spice_id(backup_target)
+        except:
+            #if the spice lookup fails for some other reason, or if we're a level down and a backup target of None got plugged into the try, give up and just return None and the original target name
+            stid = None
+            stn = target
+        
+        return stid, stn
 
     #formulas that get reused are declared as properties with a gettr function that calculates the property the first time and simply returns it on subsequent calls
     @property

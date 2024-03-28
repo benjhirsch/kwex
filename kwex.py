@@ -227,7 +227,10 @@ for file_count, file in enumerate(fits_file):
             ext = int(ext) if ext.isnumeric() else 0
 
             #find iterative FITS keywords
-            iter_list = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
+            try:
+                iter_list = [hdr_list[ext][ki] for ki in hdr_list[ext] if re.sub(r'\d', '', ki) == kw]
+            except:
+                iter_list = []
 
             #record values of template keywords
             if len(iter_list) > 1:
