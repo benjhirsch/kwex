@@ -1,10 +1,7 @@
 import os
 import regex as re
 import sys
-import simpleeval
 import json
-import spiceypy as spice
-import numpy as np
 from astropy.io import fits
 import argparse
 from glob import glob
@@ -58,26 +55,6 @@ def fix_path(path, kwex_dir=False, exist=False):
     else:
         return return_path
 
-def init_eval(ksp):
-    se = simpleeval.SimpleEval()
-    se.names['ksp'] = ksp
-    se.names['i2j_mat'] = ksp.i2j_mat
-    se.names['j2i_mat'] = ksp.j2i_mat
-    se.names['sol_pos'] = ksp.sol_pos
-    se.names['target_pole_j2000_rec'] = ksp.target_pole_j2000_rec
-    se.names['target_name'] = ksp.spice_target_name
-    se.names['minus_x_axis'] = [-1, 0, 0]
-    se.names['j2000_north'] = [0, 0, 1]
-    se.functions['multiply'] = np.multiply
-    se.functions['recrad'] = spice.recrad
-    se.functions['mxv'] = spice.mxv
-    se.functions['dpr'] = spice.dpr
-    se.functions['arctan2'] = np.arctan2
-    se.functions['m2q'] = spice.m2q
-    se.functions['vnorm'] = spice.vnorm
-
-    return se
-
 #get command line arguments
 parser = argparse.ArgumentParser(description='KeyWord EXtraction tool for PDS3-to-PDS4 migration')
 
@@ -98,7 +75,7 @@ args = parser.parse_args()
 vm_file = fix_path(args.template, exist=True)
 
 fits_file = fix_path(args.fits, exist=True)
-fits_glob = glob(fits_file) #convert wildcard argument to list
+fits_glob = glob(fits_file, recursive=True) #convert wildcard argument to list
 if len(fits_glob) == 0:
     #if wildcard returns no files, quit
     report('no files found in path %s' % fits_file, out=True)
@@ -267,7 +244,7 @@ for file_count, file in enumerate(fits_file):
                 spice_calc[k] = spice_calc[k].replace('np.', '').replace('spice.', '')
 
         ksp = kspice.KwexSpice(file, kernel_file, ref_frame, spacecraft)
-        se = init_eval(ksp)
+        se = kspice.init_eval(ksp)
 
         for kw in spice_list:
             #se.eval translates str formulations of spice functions into something evaluable
