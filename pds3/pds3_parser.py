@@ -42,7 +42,7 @@ def parse(label):
         #split each line into tidy keyword=value pairs
         k, v = ([p.strip() for p in line.split('=')][:2] + [None]*2)[:2]
 
-        if v:
+        if v is not None:
             #multi-line values will start with (, {, or "
             if v.startswith(tuple(mchar.keys())):
                 mstop = mchar[v[0]] #multi-line ends with closing version of what it opened with
@@ -51,7 +51,7 @@ def parse(label):
                 while mstop not in current_line or (ml_count == n and v == '"'):
                     #iterate through lines until you get to the stop character, but make sure you keep going if the first line is just a "
                     ml_count += 1
-                    current_line = lbl_lines[ml_count].strip()
+                    current_line = lbl_lines[ml_count]
                     v += ' %s' % current_line
                     #and add each successive line to the multi-line value
             elif k == 'OBJECT':
@@ -61,6 +61,8 @@ def parse(label):
             elif k == 'END_OBJECT':
                 k, v, = ostack.pop()
                 #at the end of an object, remove the most recent object from the stack and assign it to the kw=val pair
+            elif v == '':
+                v = lbl_lines[n+1]
 
             if ostack:
                 ostack[-1][-1] = add_kv(ostack[-1][-1], k, v)

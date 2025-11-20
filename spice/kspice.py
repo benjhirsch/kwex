@@ -26,14 +26,7 @@ class KwexSpice:
     with open(os.path.join(spice_path, 'instr_frame_params.json')) as f:
         instr_frame_params = json.load(f)
 
-    def __init__(self, fits_file, kernel_file, ref_frame, spacecraft):
-        #spiceypy gets weird if you're not in the kernel directory
-        spice.kclear()
-        cwd = os.getcwd()
-        os.chdir(os.path.dirname(kernel_file))
-        spice.furnsh(kernel_file)
-        os.chdir(cwd)
-
+    def __init__(self, fits_file, ref_frame, spacecraft):
         #get initial keywords from FITS file to initialize SPICE
         with fits.open(fits_file) as f:
             hdr = f[0].header
@@ -176,6 +169,14 @@ class KwexSpice:
             return (sub_lat[1] * spice.dpr()) % 360
         elif lon_or_lat == 'lat':
             return sub_lat[2] * spice.dpr()
+        
+def init_spice(kernel_file):
+    #spiceypy gets weird if you're not in the kernel directory
+    spice.kclear()
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(kernel_file))
+    spice.furnsh(kernel_file)
+    os.chdir(cwd)
         
 def init_eval(ksp):
     se = simpleeval.SimpleEval()

@@ -231,6 +231,8 @@ for file_count, file in enumerate(fits_file):
                 with open(kernel_file, 'w') as f:
                     q = f.write(kernel_str_repl)
 
+            kspice.init_spice(kernel_file)
+
             sp_calc_file = fix_path(args.spice_calcs, kwex_dir=True, exist=True)
             ref_frame = args.ref_frame
             spacecraft = args.spacecraft
@@ -243,7 +245,7 @@ for file_count, file in enumerate(fits_file):
             for k in spice_calc:
                 spice_calc[k] = spice_calc[k].replace('np.', '').replace('spice.', '')
 
-        ksp = kspice.KwexSpice(file, kernel_file, ref_frame, spacecraft)
+        ksp = kspice.KwexSpice(file, ref_frame, spacecraft)
         se = kspice.init_eval(ksp)
 
         for kw in spice_list:

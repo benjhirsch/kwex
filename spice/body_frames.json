@@ -5,5 +5,6 @@
     "SATURN": "IAU_SATURN",
     "URANUS": "IAU_URANUS",
     "NEPTUNE": "IAU_NEPTUNE",
-    "TRITON": "IAU_TRITON"
+    "TRITON": "IAU_TRITON",
+    "CHARON": "IAU_CHARON"
 }
