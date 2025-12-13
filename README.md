@@ -37,12 +37,12 @@ kwex comes with a number of default configuration settings which can either be o
 | Key | Default | Values | Description |
 |-----|---------|--------|-------------|
 | logging | ENABLED | ENABLED, DISABLED | kwex can either log or not log runtime and debugging info. Critical errors are logged regardless of settings. |
-| log_output | tmp/kwex.log | CONSOLE, file | By default, a log is created in the [tmp](tmp) directory. A setting of CONSOLE will print to the console instead. |
+| log_output | tmp/kwex.log | CONSOLE, file | By default, a log is created in the tmp directory. A setting of CONSOLE will print to the console instead. |
 | warning_output | ERROR | ERROR, CONSOLE, INFO | Warnings are issued when kwex fails in some non-fatal way. By default, these messages are treated as errors and terminate the program. Instead, they can be treated identical to regular logs (INFO) or go to console but not end the program (CONSOLE). |
 | output_check | DISABLED | ENABLED, DISABLED | Enable to check output files for kwex failures and log a list of those files at program end. |
 | recursive_input_dir | DISABLED | ENABLED, DISABLED | Enable to search all subdirectories for --input path/to/dir. |
 | find_input_pair | ENABLED | ENABLED, DISABLED | By default, kwex will search for matching labels/FITS files corresponding to the input parameter. |
-| allow_unpaired | DISABLED | ENABLED, DISABLED | By default, disallow source products that consist of only one file, because this usually represents a program. Treats as a warning if disabled. |
+| allow_unpaired | DISABLED | ENABLED, DISABLED | By default, disallow source products that consist of only one file, because this usually represents a problem. Treats as a warning if disabled. |
 | keep_json | DISABLED | ENABLED, DISABLED | Keyword values are stored in a JSON file that is fed into the Velocity engine. By default, these temporary files are deleted at program end. Enable to keep them instead. |
 | activate_velocity | ENABLED | ENABLED, DISABLED | By default, kwex produces output PDS4 labels with Velocity. Disable to do everything but that (if, for example, you just want the JSON keyword value files). |
 | output_ext | .lblx | .* | By default, kwex produces .lblx output files. Be sure to include a period before the extension. |
@@ -135,4 +135,5 @@ The SPICE routines in this tool were adapted from code written by Benjamin Shark
 For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at bhirsch1@umd.edu.
 
 ## Installation
+
 Clone or otherwise download this repo and run pip install on the local kwex directory. Python >3.11 is required along with numpy, astropy, spiceypy, and simpleeval. This will create an executable command-line tool for running the main kwex script.
