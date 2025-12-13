@@ -161,4 +161,4 @@ cython_debug/
 
 # temporary files upon script execution
 tmp/
-java/VMtoXML.class
+src/velocity/java/VMtoXML.class

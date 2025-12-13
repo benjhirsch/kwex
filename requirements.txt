@@ -1,4 +1,0 @@
-astropy
-spiceypy
-simpleeval
-numpy
