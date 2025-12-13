@@ -1,0 +1,11 @@
+{
+    "NH_LORRI": {"boresight_basis_vector": [0, 0, -1], "instr_uv_plane": ["+v", "+u", ""]},
+    "NH_ALICE_AIRGLOW": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_METHANE": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_PAN1": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_NIR": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_PAN2": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_BLUE": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_RED": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]},
+    "NH_RALPH_MVIC_FT": {"boresight_basis_vector": [-1, 0, 0], "instr_uv_plane": ["", "-v", "-u"]}
+}

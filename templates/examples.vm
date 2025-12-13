@@ -20,7 +20,7 @@ Substitute Strings
 PDS3 Format
 ^HEADER = "MPF_0408549348_0X539_ENG.FIT"                                      
 
-The ^ character is not valid as a part of a Java/Velocity variable name, so a substitute string ("PTR_") is required. See pds3/var_sub.json for other substitute strings.
+The ^ character is not valid as a part of a Java/Velocity variable name, so a substitute string ("PTR_") is required. See resources/var_sub.json for other substitute strings.
 
 Kwex Format
 <file_name>$label.PTR_HEADER</file_name>
@@ -86,7 +86,7 @@ FITS Format, Extension 1
 NAXIS1  =                 5024                                                  
 
 Kwex Format
-<elements>$fits_ext1.NAXIS1</elements>
+<elements>$fits_1.NAXIS1</elements>
 
 
 Iterating FITS Keywords
@@ -108,11 +108,11 @@ Kwex Format
 Accessing SPICE Keywords
 ========================
 
-SPICE keywords are "accessed" from spice/spice_cals.json, which lists keywords and corresponding SPICE function calls and formulas for deriving the value of that keyword. See spice/names_and_functions.txt for the list of variable names and functions that are available for use.
+SPICE keywords are "accessed" from resources/spice_equations.json, which lists keywords and corresponding SPICE function calls and equations for computing the value of that keyword. See resources/names_and_functions.txt for the list of variable names and functions that are available for use.
 
 SPICE Format
-"SPCQA": "spice.m2q(i2j_mat)[0]"
-i2j_mat                                         =   spice.pxform(instr_frame, ref_frame, et)
+"SPCQA": "quaternion_component(i2j_mat, 'a')"
+i2j_mat = spice.pxform(_instr_frame, _ref_frame, _et)
 
 Kwex Format
 <geom:qcos>$spice.SPCQA</geom:qcos>

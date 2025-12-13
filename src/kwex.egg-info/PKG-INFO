@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: kwex
+Version: 3.0.0
+Summary: KeyWord EXtraction tool for PDS3-to-PDS4 migration
+Author-email: Ben Hirsch <bhirsch1@umd.edu>
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: astropy
+Requires-Dist: spiceypy
+Requires-Dist: simpleeval
