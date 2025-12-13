@@ -29,7 +29,7 @@ def add_to_val(val_list: dict, val_type: str, keyword: str, func_var=None, val_f
 
     return val_list
 
-def send_values(val_list, output_path):
+def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
     VALS_DIR.mkdir(parents=True, exist_ok=True)
     json_vals = VALS_DIR / f'vals_{output_path.with_suffix(".json").name}'

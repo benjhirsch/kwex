@@ -5,7 +5,7 @@ import json
 from loggers.logger import get_logger
 from constants import *
 
-def compile_check(java_class: str, java_source: str) -> tuple[tuple[bool, bool, bool], int]:
+def compile_check(java_class: str, java_source: str) -> tuple[bool, int]:
     """ Function to check whether the Java Velocity class needs to be compiled. Does so if it doesn't exist, is incompatible with the system's Java runtime environment, or is older than its .java source file. """
     class_exists = java_class.is_file()
     system_java_version = system_version()
@@ -39,7 +39,7 @@ def newer(file1: Path, file2: Path) -> bool:
     """ Utility to check whether file1 was modified more recently than file2. """
     return file1.stat().st_mtime > file2.stat().st_mtime
 
-def wait_process(process):
+def wait_process(process: subprocess.Popen):
     """ Utility that loops until a (java) process is complete. """
     while process and process.poll() is None:
         pass

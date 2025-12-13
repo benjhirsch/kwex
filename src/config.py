@@ -73,7 +73,7 @@ def path(key: str) -> Path:
     else:
         return KWEX_DIR / key_path
     
-def get_boolean(key: str, value: str):
+def get_boolean(key: str, value: str) -> bool:
     """ Helper function that converts ENABLED/DISABLED strings to boolean values """
     if key in CONFIG_BOOLEAN:
         return CONFIG_ENABLED_DICT[value]

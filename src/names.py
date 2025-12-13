@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 class ConfigKey(StrEnum):
+    """ Symbolic names for configuration keys with string values for use in JSON config file. """
     LOGGING = 'logging'
     LOG_OUTPUT = 'log_output'
     WARNING = 'warning_output'
@@ -23,6 +24,7 @@ class ConfigKey(StrEnum):
     SPICE_ABCORR = 'abcorr'
 
 class ConfigState(StrEnum):
+    """ Symbolic names for configuration key values with string values for use in JSON config file. """
     ENABLED = 'ENABLED'
     DISABLED = 'DISABLED'
     ERROR = 'ERROR'
@@ -34,6 +36,7 @@ class ConfigState(StrEnum):
     MOVE = 'MOVE'
 
 class SpiceKey(StrEnum):
+    """ Symbolic names for keys that map to components needed for SPICE computations. """
     SPACECRAFT_CLOCK = 'sclk'
     SPACECRAFT_ID = 'spice_sc_id'
     INSTRUMENT_FRAME = 'instr_frame'
@@ -43,6 +46,7 @@ class SpiceKey(StrEnum):
     INSTR_UV_PLANE = 'instr_uv_plane'
 
 class Source(StrEnum):
+    """ Symbolic names for input source file types. """
     PDS3 = 'pds3'
     FITS = 'fits'
     SPICE = 'spice'

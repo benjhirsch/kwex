@@ -51,7 +51,7 @@ class SpiceWrapper:
             self._boresight_basis_vector = np.array([0, 0, -1])
             self._instr_uv_plane = ['+u', '+v', '']
 
-    def _get_fits_kw(self, keyword):
+    def _get_fits_kw(self, keyword: SpiceKey):
         """ SpiceWrapper helper method that retrieves a FITS keyword value corresponding to a quantity necessary for spice computations """
         try:
             return self._fits_kws[SpiceWrapper.fits_spice_kws[keyword]]
@@ -136,7 +136,7 @@ class SpiceWrapper:
         except:
             pass
 
-    def quaternion_component(self, matrix, component):
+    def quaternion_component(self, matrix: np.ndarray, component: str) -> float:
         """ SpiceWrapper method that computes quaternion of transformation matrix and returns a component of it (a, x, y, z) """
         comp_dict = {'a': 0, 'x': 1, 'y': 2, 'z': 3}
         return spice.m2q(matrix)[comp_dict[component.lower()]]
@@ -218,7 +218,7 @@ class SpiceWrapper:
 
         return radec * spice.dpr()
     
-def init_spice(var_list):
+def init_spice(var_list: dict):
     """ Function to load SPICE kernels for SPICE calculations. """
     if len(var_list[Source.SPICE]) > 0:
         check_kernel(path(ConfigKey.SPICE_KERNEL))

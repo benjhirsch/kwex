@@ -119,7 +119,7 @@ def get_output(product: dict) -> Path:
                 
     return output_return
 
-def get_data_product(product):
+def get_data_product(product: dict) -> Path:
     """ Helper that gets the fits file for a product """
     if Source.FITS in product:
         return product[Source.FITS]
@@ -142,7 +142,7 @@ def get_input_root(product_list: list[dict]) -> Path:
 
         return input_root
     
-def get_files():
+def get_files() -> list:
     """ Container function that gets source files and product list from command-line arguments """
     input = run_state.args.input
     input_root = run_state.args.input_root

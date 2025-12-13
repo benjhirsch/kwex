@@ -89,6 +89,6 @@ def build_nows_template(line: str, vm_nows: str, current_line: str, in_velocity:
     
     return vm_nows, current_line, in_velocity
 
-def write_nows_template(nows_temeplate_path: Path, vm_nows: str) -> Path:
+def write_nows_template(nows_temeplate_path: Path, vm_nows: str):
     """ Utility to write the no whitespace (nows) template file """
     nows_temeplate_path.write_text(vm_nows)

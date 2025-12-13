@@ -5,7 +5,7 @@ from .pds3 import get_lbl, get_lbl_values
 from .fits import get_fits, get_fits_values
 from .spice import get_spice_values
 
-def get_values(product, var_list):
+def get_values(product: dict, var_list: dict) -> dict:
     """ Container function for parsing source keyword values corresponding to template variables """
     spice_eqns = run_state.spice_eqns
     run_state.bad_output = False

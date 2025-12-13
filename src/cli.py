@@ -50,7 +50,7 @@ def config_checker(config_arg: str) -> tuple[str, str]:
     
     return key, value
 
-def print_full_help(parser):
+def print_full_help(parser: argparse.ArgumentParser):
     """ Custom help function that displays usage for all subcommands of CLI. """
     subparser_actions = [action for action in parser._actions if isinstance(action, argparse._SubParsersAction)]
     for sa in subparser_actions:
