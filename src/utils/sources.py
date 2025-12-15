@@ -7,62 +7,70 @@ from constants import *
 from names import ConfigKey, Source
 from loggers.interrupter import warning_handler, error_handler
 
+def source_id(file):
+    ext = file.suffix
+    for s in EXTENSIONS:
+        if ext.lower() in EXTENSIONS[s]:
+            return s
+    warning_handler(f'{file.name} does not have a valid extension for a source file.')
+    return False
+
+def source_check(source, sid, check=False):
+    file_status = not check or source.is_file()
+    if not file_status:
+        warning_handler(f'{source.name} is not a valid file.')
+    return sid and file_status
+
+def source_iter(source_list, check=False):
+    added_set = set()
+    for s in source_list:
+        if not isinstance(s, Path):
+            s = Path(s.strip())
+        sid = source_id(s)
+        if source_check(s, sid, check):
+            added_set.add(s)
+    
+    return added_set
+
 def get_input(input: list) -> tuple[set, set]:
     """ Utility that takes --input parameter and constructs two sets of files: one of PDS3, one of FITS 
     
     Supports: individual files, multiple positional files, directories, glob patterns, ~ expansion, and @file.ext w/ list of input files"""
-    lbl_set = set()
-    fits_set = set()
+    source_set = set()
 
     for i in input:
+        #read list of files from @file
         if i.startswith('@'):
             at_arg = Path(i[1:]).expanduser().resolve()
             if at_arg.is_file():
                 with at_arg.open() as fa:
                     at_input = fa.readlines()
-                for a in at_input:
-                    a_path = Path(a.strip())
-                    if a_path.is_file():
-                        classify_file(a_path, lbl_set, fits_set)
-                    else:
-                        warning_handler(f'{a_path.as_posix()} in {i[1:]} is not a valid file.')
+                source_set.update(source_iter(at_input, check=True))
             continue
 
         input_path = Path(i).expanduser().resolve()
         if any(glob_char in i for glob_char in '*?[]{}'):
             input_glob = glob(i, recursive=True)
-            for g in input_glob:
-                classify_file(Path(g), lbl_set, fits_set)
+            source_set.update(source_iter(input_glob))
             continue
 
         if input_path.is_dir():
             if get_config(ConfigKey.RECURSIVE_INPUT_DIR):
-                input_glob = input_path.rglob('*')
-                for g in input_glob:
-                    classify_file(g, lbl_set, fits_set)
+                input_glob = input_path.rglob('**/*.*')
+                source_set.update(source_iter(input_glob))
             else:
-                for child in input_path.iterdir():
-                    if child.is_file():
-                        classify_file(child, lbl_set, fits_set)
+                source_set.update(input_path.iterdir())
             continue
 
         if input_path.is_file():
-            classify_file(input_path, lbl_set, fits_set)
+            source_set.update(input_path)
             continue
 
         warning_handler(f'Invalid --input parameter {i}')
 
-    error_handler(lambda: len(lbl_set) > 0 or len(fits_set) > 0, 'No input products found.')
+    error_handler(lambda: len(source_set) > 0, 'No source products found.')
 
-    return lbl_set, fits_set
-
-def classify_file(file_path: Path, lbl_set: set, fits_set: set):
-    """ Helper function to group input files into PDS3 and FITS sets """
-    ext = file_path.suffix.lower()
-    if ext in EXTENSIONS[Source.PDS3]:
-        lbl_set.add(file_path)
-    elif ext in EXTENSIONS[Source.FITS]:
-        fits_set.add(file_path)
+    return source_set
 
 def check_kernel(kernel: str):
     """ Utility to modify a metakernel's PATH_VALUE keyword to match the its physical location. """

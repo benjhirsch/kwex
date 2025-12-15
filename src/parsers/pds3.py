@@ -6,6 +6,7 @@ from constants import *
 from names import Source
 from loggers.logger import get_logger
 from utils.values import add_to_val
+from utils.products import Product
 
 def add_kv(kvd: dict, k: str, v: str) -> dict:
     """ Utility for parsing PDS3 label keyword=value pairs with arbtirary structure into a dictionary of keyword:value pairs. Handles lists of values, values with units, and values with reserved XML characters. """
@@ -37,10 +38,10 @@ def add_kv(kvd: dict, k: str, v: str) -> dict:
 
     return kvd
 
-def get_lbl(product: dict) -> dict:
+def get_lbl(product: Product) -> dict:
     """ PDS3 label parser. Reads file and returns dictionary of keyword:value pairs. Handles objects of arbitrary depth and multi-line value strings. Preserves format of text fields with whitespace. """
-    if Source.PDS3 in product:
-        label = product[Source.PDS3]
+    if product.files[Source.PDS3]:
+        label = product.label
         get_logger().info(f'Reading PDS3 label {label.name}...')
 
         kv_dict = {}

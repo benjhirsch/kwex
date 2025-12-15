@@ -6,11 +6,12 @@ from names import Source
 from loggers.logger import get_logger
 from loggers.interrupter import warning_handler
 from utils.values import add_to_val
+from utils.products import Product
 
-def get_fits(product: dict) -> dict:
+def get_fits(product: Product) -> dict:
     """ Wrapper for astropy.fits, returning the header objects in  FITS file. """
-    if Source.FITS in product:
-        fit = product[Source.FITS]
+    if product.files[Source.FITS]:
+        fit = product.data_product
         get_logger().info(f'Reading FITS file {fit.name}...')
         try:
             with fits.open(fit) as f:

@@ -1,4 +1,5 @@
 import shutil
+from collections import OrderedDict
 
 from constants import *
 from names import ConfigKey, ConfigState, Source
@@ -6,81 +7,81 @@ from loggers.logger import get_logger
 from loggers.interrupter import error_handler, warning_handler
 from config import get_config
 from state import run_state
-from .sources import get_input
+from .sources import get_input, source_id, source_check
 
-def product_difference(set1: set, set2: set) -> set:
-    """ Helper function that returns the output of a difference operation between two sets of files with extensions removed. """
-    return set(s1.with_suffix('') for s1 in set1) - set(s2.with_suffix('') for s2 in set2)
+class Product:
+    def __init__(self, path):
+        self.root = path.with_suffix('')
+        self.files = {Source.PDS3: None, Source.FITS: None}
 
-def add_unspecified(set1: set, set2: set, ext: str) -> set:
-    """ Helper function that finds the complementary files (same filename, different extension) present in set1 that are missing in set2 and adds them (with the appropriate extension) to set2. """
-    unspecified_set = product_difference(set1, set2)
-    for un in unspecified_set:
-        for s in EXTENSIONS[ext]:
-            file = un.with_suffix(s)
-            if file.is_file():
-                set2.add(file)
-                continue
-    return set2
+        self.add_file(path)
 
-def add_unpaired(unpaired_set: set, file_root: dict, file_type: str) -> list:
-    """ Helper function that adds singleton products to product list. """
-    #if config is set to allow products with only one file (missing either fits or label), add those singleton files to the product list
-    un_list = []
-    type_switch = [Source.PDS3, Source.FITS]
-    if len(unpaired_set) > 0:
-        if not get_config(ConfigKey.ALLOW_UNPAIRED):
-            #if unpaired files are not allowed and found, issues a warning. if warning is to set to error, the program will end.
-            warning_handler(f'Unpaired {file_type} files found.')
-        else:
-            #otherwise just let the user know, because even if you're allowing it, it's weird.
-            get_logger().info(f'Unpaired {file_type} files found.')
-        for un in unpaired_set:
-            un_list.append({file_type: file_root[un], type_switch[type_switch.index(file_type)^1]: None})
-    return un_list
+    @property
+    def data_product(self):
+        return self.root.with_suffix(self.files[Source.FITS])
+        
+    @property
+    def label(self):
+        return self.root.with_suffix(self.files[Source.PDS3])
 
-def set_root(file_set: set) -> dict:
-    """ Helpfer function to link a file root (full path sans extension) with its extension so the root can be compared to files with the same root. """
-    file_root = {}
-    for file in file_set:
-        file_root[file.with_suffix('')] = file
-    return file_root
+    def add_file(self, path, check=False):
+        ext = path.suffix
+        sid = source_id(path)
+        file_added = source_check(path, sid, check)
+        if file_added:
+            self.files[sid] = ext
+        return file_added
 
-def get_products(lbl_set: set, fits_set: set) -> list:
-    """ Parser that returns a list of paired files comprising a PDS3 object: PDS3 label and FITS data file """
-    product_list = []
-
-    if get_config(ConfigKey.FIND_PAIR):
-        #allows you to only specify .fits or .lbl files and still get the full PDS3 product
-        lbl_set = add_unspecified(fits_set, lbl_set, Source.PDS3)
-        fits_set = add_unspecified(lbl_set, fits_set, Source.FITS)
-
-    fits_root = set_root(fits_set)
-    lbl_root = set_root(lbl_set)
-    #get products that have both a fits file and label file
-    paired_input = set(f.with_suffix('') for f in fits_set) & set(l.with_suffix('') for l in lbl_set)
+    def find_pair(self, source):
+        for s in EXTENSIONS[source]:
+            pair_path = self.root.with_suffix(s)
+            pair_found = self.add_file(pair_path, check=True)
+            if pair_found:
+                return True
+        return False
     
-    for p in paired_input:
-        #add those products to the product list
-        product_list.append({Source.PDS3: lbl_root[p], Source.FITS: fits_root[p]})
+def get_products(source_set: set) -> OrderedDict:
+    """ Parser that returns a list of paired files comprising a PDS3 object: PDS3 label and FITS data file """
+    product_list = OrderedDict()
 
-    #find and add unpaired products if that's allowed
-    unpaired_lbl = product_difference(fits_set, lbl_set)
-    unpaired_fits = product_difference(lbl_set, fits_set)
+    for source in source_set:
+        source_root = source.with_suffix('')
+        if source_root in product_list:
+            if product_list[source_root].files[source_id(source)] is None:
+                product_list[source_root].add_file(source)
+        else:
+            product = Product(source)
+            sid = source_id(source)
+            
+            if get_config(ConfigKey.FIND_PAIR):
+                type_switch = [Source.PDS3, Source.FITS]
+                pair_source = type_switch[type_switch.index(sid)^1]
+                pair_found = product.find_pair(pair_source)
+                if not pair_found:
+                    get_logger().info(f'Unpaired product {source.name} found.')
+                    if not get_config(ConfigKey.ALLOW_UNPAIRED):
+                        warning_handler(f'Removing {source.name} from product list.')
 
-    product_list += add_unpaired(unpaired_lbl, lbl_root, Source.PDS3)
-    product_list += add_unpaired(unpaired_fits, fits_root, Source.FITS)
+            if not get_config(ConfigKey.FIND_PAIR) or pair_found or get_config(ConfigKey.ALLOW_UNPAIRED):
+                product_list[product.root] = product
 
-    error_handler(lambda: len(product_list) > 0, 'No input products found.')
+    for root, product in product_list.copy().items():
+        if None in product.files.values():
+            get_logger().info(f'Unpaired product {Path(root).name} found.')
+            if not get_config(ConfigKey.ALLOW_UNPAIRED):
+                warning_handler(f'Removing {Path(root).name} from product list.')
+                q = product_list.pop(root)
+
+    error_handler(lambda: len(product_list) > 0, 'No source products found.')
     get_logger().info(f'{len(product_list)} products identified.')
 
     return product_list
 
-def get_output(product: dict) -> Path:
+def get_output(product: Product) -> Path:
     """ Utility that constructs an output Path object from an input product """
     ext = get_config(ConfigKey.OUTPUT_EXT)
     output = run_state.args.output
-    first_product = list(product.values())[0].expanduser().resolve()
+    root_path = Path(product.root).expanduser().resolve()
 
     if output:
         output_path = Path(output).expanduser().resolve()
@@ -95,22 +96,22 @@ def get_output(product: dict) -> Path:
                 input_root = Path(input_root).expanduser().resolve()
                 error_handler(lambda: input_root.is_dir(), f'{input_root.as_posix()} is not a valid directory.')
 
-                input_rel = first_product.relative_to(input_root)
+                input_rel = root_path.relative_to(input_root)
                 output_plus_input = (output_path / input_rel).with_suffix(ext)
                 output_plus_input.parent.mkdir(parents=True, exist_ok=True)
 
                 output_return = output_plus_input
             else:
                 #if no valid input root, just append product filename to output path
-                output_return = output_path / first_product.with_suffix(ext).name
+                output_return = output_path / root_path.with_suffix(ext).name
     else:
         #it no output argument given, send output to product location with output extension
-        output_return = first_product.with_suffix(ext)
+        output_return = root_path.with_suffix(ext)
     
     run_state.output_list.append(output_return)
 
     if not get_config(ConfigKey.DATA_OUTPUT) == ConfigState.IGNORE:
-        data_product = get_data_product(product)
+        data_product = product.data_product
         if data_product:
             data_output = output_return.with_suffix(data_product.suffix)
             verb = {ConfigState.COPY: 'Copy', ConfigState.MOVE: 'Mov'}[get_config(ConfigKey.DATA_OUTPUT)]
@@ -119,15 +120,10 @@ def get_output(product: dict) -> Path:
                 
     return output_return
 
-def get_data_product(product: dict) -> Path:
-    """ Helper that gets the fits file for a product """
-    if Source.FITS in product:
-        return product[Source.FITS]
-    
-def get_input_root(product_list: list[dict]) -> Path:
+def get_input_root(product_list: OrderedDict[Product]) -> Path:
     """ Utility to determine last common root directory of product list. """
     if len(product_list) > 1:
-        parts_list = [list(product.values())[0].parts for product in product_list]
+        parts_list = [Path(product).parts for product in product_list]
 
         common_parts = []
         for part in zip(*parts_list):
@@ -142,13 +138,13 @@ def get_input_root(product_list: list[dict]) -> Path:
 
         return input_root
     
-def get_files() -> list:
+def get_files():
     """ Container function that gets source files and product list from command-line arguments """
     input = run_state.args.input
     input_root = run_state.args.input_root
 
-    lbl_set, fits_set = get_input(input)
-    product_list = get_products(lbl_set, fits_set)
+    source_set = get_input(input)
+    product_list = get_products(source_set)
     run_state.input_root = input_root or get_input_root(product_list)
 
     return product_list
