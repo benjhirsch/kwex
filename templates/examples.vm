@@ -86,7 +86,7 @@ FITS Format, Extension 1
 NAXIS1  =                 5024                                                  
 
 Kwex Format
-<elements>$fits_1.NAXIS1</elements>
+<elements>$fits.ext1.NAXIS1</elements>
 
 
 Iterating FITS Keywords

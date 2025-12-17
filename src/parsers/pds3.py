@@ -1,6 +1,5 @@
 import regex as re
 import json
-from collections import defaultdict
 
 from constants import *
 from names import Source
@@ -88,7 +87,7 @@ def get_lbl(product: Product) -> dict:
 def get_lbl_values(var_list: dict, lbl_kws: dict) -> dict:
     """ Function that finds values of PDS3 label keywords corresponding to Velocity template variables. Performs substitution to convert variables back into PDS3 format in cases where the PDS3 keyword string would not be a valid Java/Velocity variable. """
     sub_check = {'start': lambda x: '^%s' % x, 'in': lambda x: x, 'end': lambda x: '%s$' % x}
-    val_list = defaultdict(lambda: {})
+    val_list = {Source.PDS3: {}}
 
     #load PDS3 keyword variable substitution file
     with VAR_SUB_LIST.open() as f:
@@ -100,6 +99,6 @@ def get_lbl_values(var_list: dict, lbl_kws: dict) -> dict:
             #for each possible variable substitution, check if the Java sub is in the right place, then replace with PDS3 original
             pds3_keyword = re.sub(sub_check[var_sub_list[sub]['pos']](sub), var_sub_list[sub]['sub'], pds3_keyword)
 
-        val_list = add_to_val(val_list, Source.PDS3, template_keyword, func_var=pds3_keyword, val_func=lambda x: lbl_kws[x])
+        val_list[Source.PDS3].update(add_to_val(keyword=template_keyword, val_func=lambda x: lbl_kws[x], func_var=pds3_keyword))
 
     return val_list

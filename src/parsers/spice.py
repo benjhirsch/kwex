@@ -51,7 +51,7 @@ class SpiceWrapper:
             self._boresight_basis_vector = np.array([0, 0, -1])
             self._instr_uv_plane = ['+u', '+v', '']
 
-    def _get_fits_kw(self, keyword: SpiceKey):
+    def _get_fits_kw(self, keyword: SpiceKey) -> str:
         """ SpiceWrapper helper method that retrieves a FITS keyword value corresponding to a quantity necessary for spice computations """
         try:
             return self._fits_kws[SpiceWrapper.fits_spice_kws[keyword]]
@@ -243,7 +243,7 @@ def init_spice(var_list: dict):
 def get_spice_values(var_list: dict, fits_kws: dict, spice_eqs: dict) -> Path:
     """ Function that calculates SPICE geometry values corresponding to Velocity template variables. Uses a spiceypy wrapper and the simpeleeval library to calculate values. """
     get_logger().info('Calculating SPICE keywords...')
-    val_list = defaultdict(lambda: {})
+    val_list = {Source.SPICE: {}}
 
     #simpleeval evaluator translates str formulations of spice functions into something evaluable
     if len(var_list[Source.SPICE]) > 0:
@@ -256,7 +256,7 @@ def get_spice_values(var_list: dict, fits_kws: dict, spice_eqs: dict) -> Path:
         evaluator = init_eval(ksp)
 
     for keyword in var_list[Source.SPICE]:
-        val_list = add_to_val(val_list, Source.SPICE, keyword, val_func=lambda x: evaluator.eval(spice_eqs[x]), except_val='KEYWORD NOT RECALCULATED')
+        val_list[Source.SPICE].update(add_to_val(keyword=keyword, val_func=lambda x: evaluator.eval(spice_eqs[x]), except_val='KEYWORD NOT RECALCULATED'))
 
     return val_list
 

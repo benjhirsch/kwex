@@ -70,7 +70,7 @@ where source is one of "fits," "label," or "spice," and keyword is (usually) exa
 ### FITS Keywords
 By default, kwex searches for keywords in the primary header. To specify a different header, write the pointer as:
 
-$fits_N.keyword
+$fits.extN.keyword
 
 where N is the number of the extension. 0 is the primary header, so you probably want to begin with 1 for the first extension.
 

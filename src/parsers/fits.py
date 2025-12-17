@@ -1,6 +1,5 @@
 import regex as re
 from astropy.io import fits
-from collections import defaultdict
 
 from names import Source
 from loggers.logger import get_logger
@@ -22,26 +21,41 @@ def get_fits(product: Product) -> dict:
     
 def get_fits_values(var_list: dict, fits_kws: dict) -> dict:
     """ Function that finds values of FITS header keywords corresponding to Velocity template variables. Handles multiple extensions. Iterates through keywords with index values. """
-    val_list = defaultdict(lambda: {})
+    val_list = {Source.FITS: {}}
 
     for ext, keyword in var_list[Source.FITS]:
         #identify FITS keyword extension, with none being 0
-        if ext is None:
-            ext_num = 0
-            fits_str = 'fits'
-        elif ext.isnumeric():
-            ext_num = int(ext)
-            fits_str = f'fits_{ext}'
-
-        #find iterative FITS keywords
-        try:
-            iter_list = [fits_kws[ext_num][kw] for kw in fits_kws[ext_num] if re.sub(r'\d', '', kw) == keyword]
-        except:
-            iter_list = []
-
-        if len(iter_list) > 1:
-            val_list = add_to_val(val_list, fits_str, keyword, val_func=lambda: iter_list)
+        ext_num = 0 if ext is None else int(ext)
+        hdr = fits_kws[ext_num]
+        
+        if keyword in hdr:
+            val_container = lambda x: hdr[x]
         else:
-            val_list = add_to_val(val_list, fits_str, keyword, val_func=lambda x: fits_kws[ext_num][x])
+            val_container = lambda x: {kw_idx: hdr[keyword+kw_idx] for kw_idx in get_iterative(x, hdr)}
+
+        if ext is None:
+            template_keyword = keyword
+            val_func = val_container
+        elif ext.isnumeric():
+            template_keyword = f'ext{ext}'
+            val_func = lambda x: {x: val_container(x)}
+
+        val_list[Source.FITS].update(add_to_val(keyword=template_keyword, val_func=val_func, func_var=keyword))
 
     return val_list
+
+def get_iterative(keyword: str, hdr: dict) -> list[str]:
+    """ Helper function for generating a list of iterative FITS keywords. Chunks FITS header keywords into a base and numerical index and returns a list of indexes with bases that match the keyword argument """
+    iter_list = []
+    for kw in hdr:
+        kw_chunk = re.search(r'([A-Z\-\_]+)(\d*)', kw)
+        try:
+            kw_base = kw_chunk.group(1)
+            kw_idx = kw_chunk.group(2)
+        except:
+            continue
+
+        if kw_base == keyword:
+            iter_list.append(kw_idx)
+
+    return iter_list

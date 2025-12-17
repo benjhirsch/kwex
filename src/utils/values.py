@@ -10,24 +10,23 @@ from config import get_config
 from state import run_state
 from names import ConfigKey
 
-def add_to_val(val_list: dict, val_type: str, keyword: str, func_var=None, val_func=None, except_val='KEYWORD VALUE NOT FOUND') -> dict:
+def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE NOT FOUND') -> dict:
+    val_entry = {}
     """ Utility that constructs a dictionary of values retrieved from input files corresponding to variable pointers in a template file. """
-    if val_func:
-        #if there's a function in the arguments, generate val by running that function
-        if not func_var:
-            #if no explicit function variable is given, use keyword
-            func_var = keyword
-        try:
-            val = val_func(func_var)
-        except Exception as e:
-            val = except_val
-            if get_config(ConfigKey.OUTPUT_CHECK):
-                run_state.bad_output = True
-            warning_handler(f'keyword {keyword} value not found because {e}')
+    if not func_var:
+        #if no explicit function variable is given, use keyword
+        func_var = keyword
+    try:
+        val = val_func(func_var)
+    except Exception as e:
+        val = except_val
+        if get_config(ConfigKey.OUTPUT_CHECK):
+            run_state.bad_output = True
+        warning_handler(f'keyword {keyword} value not found because {e}')
 
-    val_list[val_type][keyword] = val
+    val_entry[keyword] = val
 
-    return val_list
+    return val_entry
 
 def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
@@ -36,7 +35,7 @@ def send_values(val_list: dict, output_path: Path) -> Path:
 
     get_logger().info(f'Recording keyword values in {json_vals.name}...')
 
-    json_vals.write_text(json.dumps(val_list))
+    json_vals.write_text(json.dumps(val_list, indent=4))
     return json_vals
 
 def init_eval(ksp) -> simpleeval.SimpleEval:

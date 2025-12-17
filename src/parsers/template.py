@@ -30,7 +30,7 @@ def get_vars() -> tuple[dict, str]:
     get_logger().info(f'{len(label_list)} PDS3 label keywords found in template.')
     run_state.var_list[Source.PDS3] = label_list
 
-    fits_list = find_vars(r'\$(?:\{)?fits(?:_(\d+))?\.(\w+)(?:\})?', vm_str, groups=[1, 2])
+    fits_list = find_vars(r'\$(?:\{)?fits(?:\.ext(\d+))?\.(\w+)(?:\})?', vm_str, groups=[1, 2])
     #as above (but with fits), plus fits_<1+ digits> for FITS extensions
     get_logger().info(f'{len(fits_list)} FITS keywords found in template.')
     run_state.var_list[Source.FITS] = fits_list
@@ -89,6 +89,6 @@ def build_nows_template(line: str, vm_nows: str, current_line: str, in_velocity:
     
     return vm_nows, current_line, in_velocity
 
-def write_nows_template(nows_temeplate_path: Path, vm_nows: str):
+def write_nows_template(nows_temeplate_path: Path, vm_nows: str) -> Path:
     """ Utility to write the no whitespace (nows) template file """
     nows_temeplate_path.write_text(vm_nows)
