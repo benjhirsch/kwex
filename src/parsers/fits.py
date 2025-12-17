@@ -34,13 +34,12 @@ def get_fits_values(var_list: dict, fits_kws: dict) -> dict:
             val_container = lambda x: {kw_idx: hdr[keyword+kw_idx] for kw_idx in get_iterative(x, hdr)}
 
         if ext is None:
-            template_keyword = keyword
-            val_func = val_container
+            val_list[Source.FITS].update(add_to_val(keyword=keyword, val_func=val_container, func_var=keyword))
         elif ext.isnumeric():
-            template_keyword = f'ext{ext}'
-            val_func = lambda x: {x: val_container(x)}
-
-        val_list[Source.FITS].update(add_to_val(keyword=template_keyword, val_func=val_func, func_var=keyword))
+            ext_str = f'ext{ext}'
+            if ext_str not in val_list[Source.FITS]:
+                val_list[Source.FITS][ext_str] = {}
+            val_list[Source.FITS][ext_str].update(add_to_val(keyword=keyword, val_func=val_container))
 
     return val_list
 

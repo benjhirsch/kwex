@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1] - 2025-12-17
+
+### Fixed
+
+- str value for `Source.PDS3` changed to `label` to conform with Velocity template context
+- `get_fits_values` parser function adjusted so that subsequent extN keywords don't overwrite previous ones in `val_list`
+- `add_kv` PDS3 parser function adjusted so that list keywords with whitespace are properly captured
+
 ## [3.0.0] - 2025-12-17
 
 ### Added

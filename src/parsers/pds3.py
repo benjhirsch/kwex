@@ -10,9 +10,10 @@ from utils.products import Product
 def add_kv(kvd: dict, k: str, v: str) -> dict:
     """ Utility for parsing PDS3 label keyword=value pairs with arbtirary structure into a dictionary of keyword:value pairs. Handles lists of values, values with units, and values with reserved XML characters. """
     if isinstance(v, str):
-        if re.match(r'(\((.*)?\))|(\{(.*)?\})', v.strip()): #string enclosed in parantheses or curly brackets
+        vstrip = v.strip().replace('\n', '').replace('\t', '')
+        if re.match(r'(\((.*)?\))|(\{(.*)?\})', vstrip): #string enclosed in parantheses or curly brackets
             #separate parenthetical lists into lists
-            listv = [e.strip() for e in v.strip()[1:-1].split(',')]
+            listv = [e.strip() for e in vstrip[1:-1].split(',')]
             #send each element through add_kv individually
             v = [add_kv({}, n, elem)[n] for n, elem in enumerate(listv)]
         elif not v.startswith('"') and re.search(r'<\w+>', v): #1+ alphanumeric characters enclosed in angle brackets

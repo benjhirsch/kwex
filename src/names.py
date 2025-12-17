@@ -47,6 +47,6 @@ class SpiceKey(StrEnum):
 
 class Source(StrEnum):
     """ Symbolic names for input source file types. """
-    PDS3 = 'pds3'
+    PDS3 = 'label'
     FITS = 'fits'
     SPICE = 'spice'
