@@ -63,7 +63,7 @@ def get_input(input: list) -> tuple[set, set]:
             continue
 
         if input_path.is_file():
-            source_set.update(input_path)
+            source_set.add(input_path)
             continue
 
         warning_handler(f'Invalid --input parameter {i}')
