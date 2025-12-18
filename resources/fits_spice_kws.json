@@ -1,0 +1,7 @@
+{
+    "sclk": "SPCSCLK",
+    "instr_frame": "SPCINSTR",
+    "spice_target_name": "SPCTCB",
+    "fits_target_name": "TARGET",
+    "spice_sc_id": "SPCSCID"
+}

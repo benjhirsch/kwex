@@ -1,0 +1,56 @@
+Names
+=====
+
+SpiceWrapper properties
+=======================
+spacecraft = "spacecraft" config value
+spice_target_name = spice.bodc2n(_spice_target_id)
+i2j_mat = spice.pxform(_instr_frame, _ref_frame, _et)
+j2i_mat = spice.pxform(_ref_frame, _instr_frame, _et)
+sol_pos = spice.spkpos('Sun', _et, _instr_frame, abcorr, spacecraft)
+target_pole_inertial_frame_rec = spice.radrec(1, *spice.bodeul(_spice_target_id, _et)[:2])
+north_img_coord = spice.mxv(j2i_mat, [0, 0, 1])
+target_pole_img_coord = spice.mxv(j2i_mat, target_pole_inertial_frame_rec)
+
+SpiceWrapper internal variables (not usable by simpleeval)
+==========================================================
+_ref_frame = "spice_frame" config value
+abcorr = "abcorr" config value
+_spice_target_id = spice.bodn2c("spice_target_name" entry from "spice_fits_kws" config value file)
+_instr_frame = "instr_frame" entry from "spice_fits_kws" config value file
+_et = spice.scs2e("spice_sc_id" entry from "spice_fits_kws" config value file, "sclk" entry from "spice_fits_kws" config value file)
+
+Functions
+=========
+
+High-level SpiceWrapper methods
+===============================
+instrument_boresight(ra_or_dec) - Calculates instrument boresight coordinates in selected inertial reference frame. Argument 'ra_or_dec' takes either 'ra' or 'dec' and determines which value is returned.
+clock_angle(vector) - Projects a 3D vector from the instrument's reference frame onto the instrument's image plane, then calculates the clock angle of that vector.
+quaternion_component(matrix, component) - Returns component (a, x, y, z) of specified rotation matrix.
+state_vector_component(from_body, to_body, vector, component) - Calculates vector from 'from_body' to 'to_body' in selected inertial reference frame. 'vector' takes 'position' or 'velocity'. 'component' takes 'x', 'y', or 'z'.
+state_vector_magnitude(from_body, to_body, vector) - Computes magnitude of vector from from_body to to_body.
+instrument_position_angle(axis) - calculate position angle along axis (+x, +y, +z).
+sub_point(sc_or_solar, lat_or_lon) - computes subspacecraft or subsolar point on a body with a fixed reference frame, returns either lon or lat.
+sol_phase_ang(target_body, obs_body) - returns phase angle of target_body - sun - obs_body.
+
+Low-level spiceypy and numpy functions
+======================================
+spice.recrad
+spice.mxv
+spice.dpr
+spice.m2q
+spice.vnorm
+spice.pxform
+spice.spkpos
+spice.radrec
+spice.bodeul
+spice.dpr
+spice.spkezr
+spice.phaseq
+spice.subpnt
+spice.subslr
+spice.reclat
+np.array
+np.ndarray
+np.arctan2

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kwex"
+version = "3.0.0"
+description = "KeyWord EXtraction tool for PDS3-to-PDS4 migration"
+readme = "README.md"
+authors = [
+    { name = "Ben Hirsch", email = "bhirsch1@umd.edu" }
+]
+
+requires-python = ">=3.11"
+
+dependencies = [
+    "numpy",
+    "astropy",
+    "spiceypy",
+    "simpleeval",
+]
+
+[project.scripts]
+kwex = "cli:main"
+
+[tools.setuptools.packages.find]
+include = ["kwex*"]
