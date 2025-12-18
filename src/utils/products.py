@@ -87,7 +87,7 @@ def get_output(product: Product) -> Path:
         output_path = Path(output).expanduser().resolve()
         if len(output_path.suffix) > 0:
             #for --output argument of path/to/file.ext, just return that (very bad option if you have multiple input files)
-            output_return = output
+            output_return = output_path
         else:
             error_handler(lambda: output_path.is_dir(), f'{output_path.as_posix()} is not a valid directory.')
             #for path/to/directory argument, preserve directory structure after input root

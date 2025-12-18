@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2] - 2025-12-18
+
+### Fixed
+
+- Fixed fatal source utility bug when `input` argument is a single, explicitly declared file
+- Fixed fatal product utility bug when `output` argument is a single, explicitly declared file
+
 ## [3.0.1] - 2025-12-17
 
 ### Fixed
