@@ -30,6 +30,16 @@ def get_fits_values(var_list: dict, fits_kws: dict) -> dict:
         
         if keyword in hdr:
             val_container = lambda x: hdr[x]
+        elif keyword == 'units':
+            comment_list = hdr.comments
+            unit_list = {}
+            for kw in hdr:
+                try:
+                    unit = re.search(r'\[(.+)\]', comment_list[kw])
+                    unit_list[kw] = unit.group(1)
+                except:
+                    pass
+            val_container = lambda x: unit_list
         else:
             val_container = lambda x: {kw_idx: hdr[keyword+kw_idx] for kw_idx in get_iterative(x, hdr)}
 
