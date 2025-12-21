@@ -4,12 +4,12 @@
 
 ### Added
 
-- Option to parse `[unit]` in FITS header comment fields via `unit` flag in Velocity template pointer ([#3](issues/3))
-- Regression test files (template, source files, output success files), which can be found in the [testing/](testing) directory
+- Option to parse `[unit]` in FITS header comment fields via `unit` flag in Velocity template pointer ([#3](https://github.com/benjhirsch/kwex/issues/3))
+- Regression test files (template, source files, output success files), which can be found in the [testing](testing) directory
 
 ### Fixed
 
-- Fixed bug preventing users from iteratively parsing FITS keywords with previously used base names ([#4](issues/4)). To iteratively parse FITS keywords now, use syntax `$fits.iterate.keyword` (for all cases, not just those with possible conflicts).
+- Fixed bug preventing users from iteratively parsing FITS keywords with previously used base names ([#4](https://github.com/benjhirsch/kwex/issues/4)). To iteratively parse FITS keywords now, use syntax `$fits.iterate.keyword` (for all cases, not just those with possible conflicts).
 - Logger no longer indicates SPICE keywords are being calculated when no SPICE keywords appear in the Velocity template
 
 ### Changed
