@@ -242,11 +242,11 @@ def init_spice(var_list: dict):
 
 def get_spice_values(var_list: dict, fits_kws: dict, spice_eqs: dict) -> Path:
     """ Function that calculates SPICE geometry values corresponding to Velocity template variables. Uses a spiceypy wrapper and the simpeleeval library to calculate values. """
-    get_logger().info('Calculating SPICE keywords...')
     val_list = {Source.SPICE: {}}
 
     #simpleeval evaluator translates str formulations of spice functions into something evaluable
     if len(var_list[Source.SPICE]) > 0:
+        get_logger().info('Calculating SPICE keywords...')
         try:
             ksp = SpiceWrapper(fits_kws[0])
         except:

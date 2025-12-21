@@ -50,3 +50,8 @@ class Source(StrEnum):
     PDS3 = 'label'
     FITS = 'fits'
     SPICE = 'spice'
+
+class PointerFlag(StrEnum):
+    """ Symbolic names for Velocity template pointer flags with string values to use in the templates. """
+    UNIT = 'unit'
+    ITERATE = 'iterate'

@@ -68,17 +68,23 @@ A few basics are necessary, however. The `.vm` template file acts as an input fi
 where `source` is one of `fits`, `label`, or `spice`, and `KEYWORD` is (usually) exactly as it appears in the source.
 
 ### FITS Keywords
+A number of edge cases exist for FITS keywords, which are handled by adding flags to template pointer. Multiple flags can be added and order is unimportant, so long as `$fits` is first and `keyword` is last. 
+
 By default, kwex searches for keywords in the primary header. To specify a different header, write the pointer as:
 
 `$fits.extN.KEYWORD`
 
 where `N` is the number of the extension. 0 is the primary header, so you probably want to begin with 1 for the first extension.
 
-If you need to read iterating keywords that repeat with a different index value throughout the header, set keyword equal to the value of the keyword without an index. The pointer will contain an array of all the values found which you can loop through as needed.
+If you need to read iterating keywords that repeat with a different index value throughout the header, write:
+
+`$fits.iterate.base_keyword`
+
+where `base_keyword` is the name of the keyword sans any index value, e.g. `VECTOR` would be the base of iterating keywords of the form `VECTORn`. (The iterate flag ensures there is no conflict between a base keyword and a keyword that happens to shares the same name, e.g. `NAXIS` for `NAXIS1` and `NAXIS2`.) The pointer will contain an array of all the values found which you can loop through as needed.
 
 To access the bracketed `[unit]` in a FITS keyword's comment field, write:
 
-`$fits(.extN).units.KEYWORD`
+`$fits.unit.KEYWORD`
 
 ### PDS3 Keywords
 This is mostly unproblematic. To point to a keyword within a PDS3 nested object, write:
