@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.2.0] - 2025-12-24
+
+### Added
+
+- `.bat` and `.sh` installaion files that run `pip` and remove the superfluous build directory
+
+### Fixed
+
+- Reorganized project structure so that `pip` installs package components in the correct locations
+
+### Changed
+
+- Moved `templaes`(templates) and `tests`(tests) directories and [names_and_functions.txt](names_and_functions.txt) file out of package structure for beter visibility to the user
+- Default log location is now your command line current working directory
+- Default JSON values file location is now coincident with its respective output file
+
 ## [3.1.0] - 2025-12-21
 
 ### Added

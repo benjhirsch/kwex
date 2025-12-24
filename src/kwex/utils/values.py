@@ -30,8 +30,7 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
 
 def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
-    VALS_DIR.mkdir(parents=True, exist_ok=True)
-    json_vals = VALS_DIR / f'vals_{output_path.with_suffix(".json").name}'
+    json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
 
     get_logger().info(f'Recording keyword values in {json_vals.name}...')
 

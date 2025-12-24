@@ -1,10 +1,11 @@
 from pathlib import Path
+from importlib.resources import files
+
 from .names import ConfigKey, ConfigState, Source
 
 KWEX_DIR = Path(__file__).resolve().parent
-VALS_DIR = KWEX_DIR / 'tmp'
 JAVA_DIR = KWEX_DIR / 'velocity/java'
-RESOURCE_DIR = KWEX_DIR / 'resources'
+RESOURCE_PATH = files('kwex.resources')
 CONFIG_PATH = Path.home() / '.kwex/config/config.json'
 
 JAVA_SOURCE = JAVA_DIR / 'VMtoXML.java'
@@ -19,8 +20,8 @@ JAR_FILES = ['.',
              'commons-collections-3.2.2.jar',
              'commons-lang-2.4.jar']
 
-VAR_SUB_LIST = RESOURCE_DIR / 'var_sub.json'
-MAJOR_TO_VERSION = RESOURCE_DIR / 'major_to_version.json'
+VAR_SUB_LIST = RESOURCE_PATH.joinpath('var_sub.json')
+MAJOR_TO_VERSION = RESOURCE_PATH.joinpath('major_to_version.json')
 
 RESERVED_XML_CHARS = {
     '&': 'amp',

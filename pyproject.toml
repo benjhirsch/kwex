@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kwex"
-dynamic = ["version"]
+version = "3.2.0"
 description = "KeyWord EXtraction tool for PDS3-to-PDS4 migration"
 readme = "README.md"
 authors = [
@@ -34,7 +34,5 @@ include = ["kwex*"]
 [tool.setuptools.package-data]
 kwex = [
     "resources/*.*",
-    "velocity/java/*.*",
-    "templates/*.*",
-    "testing/*"
+    "velocity/java/*.*"
 ]

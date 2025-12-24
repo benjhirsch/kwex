@@ -30,7 +30,7 @@ def get_vars() -> tuple[dict, str]:
     get_logger().info(f'{len(label_list)} PDS3 label keywords found in template.')
     run_state.var_list[Source.PDS3] = label_list
 
-    fits_list = find_vars(r'\$(?:\{)?fits(?:\.ext(\d+))?\.(\w+)(?:\})?', vm_str, groups=[1, 2])
+    fits_list = find_vars(r'\$(?:\{)?fits\.([\w.]+)(?:\})?', vm_str)
     #as above (but with fits), plus fits_<1+ digits> for FITS extensions
     get_logger().info(f'{len(fits_list)} FITS keywords found in template.')
     run_state.var_list[Source.FITS] = fits_list

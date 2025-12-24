@@ -19,6 +19,6 @@ def get_values(product: dict, var_list: dict) -> dict:
     val_list.update(get_spice_values(var_list, fits_kws, spice_eqns))
 
     if get_config(ConfigKey.OUTPUT_CHECK) and run_state.bad_output:
-        run_state.bad_output_list.append(run_state.output_list[-1])
+        run_state.bad_output_list.add(run_state.output_list[-1])
 
     return val_list
