@@ -37,7 +37,7 @@ kwex comes with a number of default configuration settings which can either be o
 | Key | Default | Values | Description |
 |-----|---------|--------|-------------|
 | logging | ENABLED | ENABLED, DISABLED | kwex can either log or not log runtime and debugging info. Critical errors are logged regardless of settings. |
-| log_output | tmp/kwex.log | CONSOLE, file | By default, a log is created in the tmp directory. A setting of CONSOLE will print to the console instead. |
+| log_output | kwex.log | CONSOLE, file | By default, a log is created in your current working directory. A setting of CONSOLE will print to the console instead. |
 | warning_output | ERROR | ERROR, CONSOLE, INFO | Warnings are issued when kwex fails in some non-fatal way. By default, these messages are treated as errors and terminate the program. Instead, they can be treated identical to regular logs (INFO) or go to console but not end the program (CONSOLE). |
 | output_check | DISABLED | ENABLED, DISABLED | Enable to check output files for kwex failures and log a list of those files at program end. |
 | recursive_input_dir | DISABLED | ENABLED, DISABLED | Enable to search all subdirectories for --input path/to/dir. |
@@ -150,3 +150,4 @@ For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at 
 Clone or otherwise download this repo, unzip, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
 
 kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/velocity/java) directory, but you will need some Java Runtime Environment installed.
+
