@@ -86,5 +86,5 @@ def check_kernel(kernel: str):
         kernel_path_repl = kernel_path.parent / 'data'
         
         if not (kernel_path_value.is_absolute() or kernel_path_value == kernel_path_repl):
-            kernel_text_repl = re.sub(r"(?<=PATH_VALUES\s+=\s+\(\n\s+').+(?=')", kernel_path_repl.posix, kernel_text)
+            kernel_text_repl = re.sub(r"(?<=PATH_VALUES\s+=\s+\(\n\s+').+(?=')", kernel_path_repl.as_posix(), kernel_text)
             kernel_path.write_text(kernel_text_repl)
