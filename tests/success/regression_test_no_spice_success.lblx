@@ -1,0 +1,87 @@
+regression test command (from kwex directory): kwex templates/regression_test_no_spice.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test_no_spice.lblx --log tests/output/regression_test_no_spice.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
+
+PDS3 label testing
+==================
+
+TARGET_NAME (basic pointer): ASTEROID 486958 (2014 MU69)
+
+INSTRUMENT_HOST_NAME (formal reference notation): NEW HORIZONS's instruments
+
+^HEADER (substitution): LOR_0396683548_0X633_SCI.FIT
+
+EXPOSURE_DURATION value (value/unit dictionary): 29.96760
+
+EXPOSURE_DURATION unit: s
+
+QUATERNION, first element (arrays) 0.6643495622
+
+(looping through indexes)
+QUATERNION, all elements (loops): 0.6643495622
+QUATERNION, all elements (loops): 0.1317140440
+QUATERNION, all elements (loops): -0.1220421059
+QUATERNION, all elements (loops): 0.7255320767
+
+HEADER BYTES (nested object keyword): 34560
+
+IMAGE DESCRIPTION (multi-line values):      FITS PDU                                                                  
+       PDU                                                                     
+                                                                               
+     Calibrated data image                                                     
+     - Corrections applied:                                                    
+       - Bias subtraction                                                      
+       - Smear removal (if non-zero exposure)                                  
+       - Flatfield correction (if non-zero exposure)                           
+       - Absolute calibration                                                  
+         - N.B. NO pixel values are CHANGED                                    
+         - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)                 
+         - ABSCCORR only adds conversion factors for                           
+           - radiance and irradiance e.g. RPLUTO; PPHOLUS                      
+     - Corrections omitted:                                                    
+       - Image subtraction                                                     
+       - Signal linearization                                                  
+       - CTI correction                                                        
+       - Smear removal (if zero exposure)                                      
+       - Dark subtraction                                                      
+       - Flatfield correction (if zero exposure)                               
+       - Geometric correction                                                  
+       - Geometric correction                                                  
+     See the data set documentation, specifically the                          
+     SOC Instrument Interface Control Document (ICD),                          
+     for more details.                                                         
+                                                                              
+
+
+
+FITS header testing
+===================
+
+APID (basic pointer): 0x633
+
+CRPIX0 (iterative keywords): 128.5
+CRPIX1 (iterative keywords): 128.5
+
+SPCK0083 (iterative w/ fits index): merged_nhpc_2017_v014.bc
+SPCK0084 (iterative w/ array indexing): merged_nhpc_2018_v100.bc
+
+ext1 BITPIX (extension access): -32
+ext1 NAXIS (retained extension access): 2
+
+(extension plus loop)
+value1
+value2
+value3
+(loop end)
+
+SPCBRRA unit (unit from fits comments): degrees
+
+TEST1 unit (units on extension): tests/second
+
+
+Velocity Logic testing
+======================
+
+HEADER BYTES + EXTENSION_CALIB_ERROR_EST_HEADER BYTES (math): 37440
+
+if logic successful
+
+else logic successful
