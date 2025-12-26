@@ -12,7 +12,7 @@
 
 ### Changed
 
-- Moved `templaes`(templates) and `tests`(tests) directories and [names_and_functions.txt](names_and_functions.txt) file out of package structure for beter visibility to the user
+- Moved [templaes](templates) and [tests](tests) directories and [names_and_functions.txt](names_and_functions.txt) file out of package structure for beter visibility to the user
 - Default log location is now your command line current working directory
 - Default JSON values file location is now coincident with its respective output file
 
