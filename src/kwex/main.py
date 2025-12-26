@@ -30,6 +30,8 @@ def run_kwex():
     wait_process(run_state.velocity_process)
     log_bad_output()
     run_state.nows_template_filename.unlink()
+    if run_state.temp_kernel:
+        run_state.kernel_path.unlink()
     if not get_config(ConfigKey.KEEP_JSON):
         for jv in run_state.json_list:
             jv.unlink()

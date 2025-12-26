@@ -14,10 +14,11 @@ class RunState:
     
     nows_template_filename: Path = Path()
     input_root: Path = Path()
+    kernel_path: Path = Path()
 
     bad_output: bool = False
-
     java_compile_process: bool = False
     velocity_process: bool = False
+    temp_kernel: bool = False
 
 run_state = RunState()

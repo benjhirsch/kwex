@@ -222,8 +222,7 @@ def init_spice(var_list: dict):
     """ Function to load SPICE kernels for SPICE calculations. """
     if len(var_list[Source.SPICE]) > 0:
         check_kernel(path(ConfigKey.SPICE_KERNEL))
-        kernel = path(ConfigKey.SPICE_KERNEL)
-        error_handler(lambda: kernel.is_file(), 'No SPICE kernel specified.')
+        kernel = run_state.kernel_path
         spice.kclear()
         
         if kernel.suffix == '.tm':

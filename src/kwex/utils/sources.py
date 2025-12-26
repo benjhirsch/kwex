@@ -6,6 +6,8 @@ from ..config import get_config
 from ..constants import *
 from ..names import ConfigKey
 from ..loggers.interrupter import warning_handler, error_handler
+from ..loggers.logger import get_logger
+from ..state import run_state
 
 def source_id(file):
     ext = file.suffix
@@ -75,8 +77,7 @@ def get_input(input: list) -> tuple[set, set]:
 def check_kernel(kernel: str):
     """ Utility to modify a metakernel's PATH_VALUE keyword to match the its physical location. """
     kernel_path = Path(kernel)
-    if not kernel_path.is_file():
-        warning_handler(f'SPICE kernel {kernel_path.name} not found.')
+    error_handler(lambda: kernel_path.is_file(), f'SPICE kernel {kernel_path.name} not found.')
 
     #check if kernel PATH_VALUE is relative or wrong and switch to absolute and correct
     if kernel_path.suffix == '.tm':
@@ -87,4 +88,10 @@ def check_kernel(kernel: str):
         
         if not (kernel_path_value.is_absolute() or kernel_path_value == kernel_path_repl):
             kernel_text_repl = re.sub(r"(?<=PATH_VALUES\s+=\s+\(\n\s+').+(?=')", kernel_path_repl.as_posix(), kernel_text)
-            kernel_path.write_text(kernel_text_repl)
+            get_logger().info(f"Invalid PATH_VALUES in {kernel_path.name}. Writing temporary metakernel with PATH_VALUES '{kernel_path_repl}'...")
+            temp_kernel = kernel_path.with_stem(f'temp_{kernel_path.stem}')
+            temp_kernel.write_text(kernel_text_repl)
+            run_state.kernel_path = temp_kernel
+            run_state.temp_kernel = True
+        else:
+            run_state.kernel_path = kernel_path
