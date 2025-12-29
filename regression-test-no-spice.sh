@@ -23,7 +23,7 @@ success_nts=tests/success/regression_test_no_spice_success_nts.log
 sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}: ?//' "$output_log" > "$output_nts"
 sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}: ?//' "$success_log" > "$success_nts"
 
-if cmp -s output_nts success_nts; then
+if cmp -s "$output_nts" "$success_nts"; then
     echo "log good"
 else
     echo "log bad"
