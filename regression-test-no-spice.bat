@@ -22,11 +22,13 @@ set output_nts=tests\output\regression_test_no_spice_nts.log
 set success_log=tests\success\regression_test_no_spice_success.log
 set success_nts=tests\success\regression_test_no_spice_success_nts.log
 
-powershell -command ^
-    "(Get-Content '%output_log%') -replace '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}: ?', '' | Set-Content '%output_nts%'"
+powershell -command "(Get-Content '%output_log%') -replace '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}: ?', '' | Set-Content '%output_nts%' -Encoding ASCII"
 
-powershell -command ^
-    "(Get-Content '%success_log%') -replace '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}: ?', '' | Set-Content '%success_nts%'"
+powershell -command "(Get-Content '%success_log%') -replace '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}: ?', '' | Set-Content '%success_nts%' -Encoding ASCII"
+
+if "%1" == "ignore-java" (
+    powershell -command "(Get-Content '%output_nts%') -notmatch 'VMtoXML' -notmatch 'Java' | Set-Content '%output_nts%' -Encoding ASCII"
+)
 
 fc %output_nts% %success_nts% >nul
 if errorlevel 1 (
