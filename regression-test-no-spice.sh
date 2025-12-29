@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 kwex templates/regression_test_no_spice.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test_no_spice.lblx --log tests/output/regression_test_no_spice.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
