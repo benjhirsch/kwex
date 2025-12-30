@@ -147,6 +147,6 @@ For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at 
 
 ## Installation
 
-Clone or otherwise download this repo, unzip, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
+Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
 
 kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/kwex/resources/java) directory, but you will need some Java Runtime Environment installed.
