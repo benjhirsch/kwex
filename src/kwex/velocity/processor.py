@@ -1,25 +1,12 @@
 import subprocess
-import os
 
 from ..constants import *
 from ..state import run_state
 from ..config import get_config
 from ..names import ConfigKey
 from ..loggers.logger import get_logger
-from ..utils.java import compile_check, wait_process
+from ..utils.java import compile_check, wait_process, java_process
 from ..utils.values import send_values
-
-def java_process(command: str, file: str, cwd: str, *args, version=None) -> subprocess.Popen:
-    """ Wrapper function to run Java comands. """
-    jargs = [command]
-    if version is not None:
-        jargs += ['--target', version]
-
-    jar_files = os.pathsep.join([(JAVA_DIR / j).as_posix() for j in [cwd]+JAR_FILES])
-    jargs += ['-cp', jar_files, file, *args]
-
-    proc = subprocess.Popen(jargs, cwd=cwd)
-    return proc
 
 def run_velocity(val_list: dict, output_path: Path) -> subprocess.Popen:
     """ Wrapper function to activate the Velocity template engine via Java. """
@@ -48,5 +35,6 @@ def compile_velocity():
     if yes:
         #if the java velocity class doesn't exist, was compiled with an incompatible version of java, or is older than its .java source file, recompile
         get_logger().info(f'Compiling Java class from source {JAVA_SOURCE.name}...')
+        USER_DIR.mkdir(parents=True, exist_ok=True)
         proc = java_process('javac', JAVA_SOURCE, JAVA_DIR, '-d', USER_DIR, version=str(system_java_version))
         run_state.java_compile_process = proc

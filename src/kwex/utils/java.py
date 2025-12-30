@@ -1,6 +1,7 @@
 import subprocess
 import struct
 import json
+import os
 
 from ..loggers.logger import get_logger
 from ..constants import *
@@ -43,3 +44,15 @@ def wait_process(process: subprocess.Popen):
     """ Utility that loops until a (java) process is complete. """
     while process and process.poll() is None:
         pass
+
+def java_process(command: str, file: str, cwd: str, *args, version=None) -> subprocess.Popen:
+    """ Wrapper function to run Java comands. """
+    jargs = [command]
+    if version is not None:
+        jargs += ['--target', version]
+
+    jar_files = os.pathsep.join([(JAVA_DIR / j).as_posix() for j in [cwd]+JAR_FILES])
+    jargs += ['-cp', jar_files, file, *args]
+
+    proc = subprocess.Popen(jargs, cwd=cwd)
+    return proc
