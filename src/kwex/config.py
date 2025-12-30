@@ -20,10 +20,10 @@ DEFAULTS = {
     ConfigKey.OUTPUT_EXT: '.lblx', #file extension for output files.
     ConfigKey.DATA_OUTPUT: ConfigState.IGNORE, #when producing output files, ignore data files, or move/copy to the output location.
     ConfigKey.SPICE_KERNEL: '', #file path for a spice kernel. no default because kernels are big.
-    ConfigKey.SPICE_EQUATIONS: 'spice_equations.json', #set of equations for calculating SPICE geometry kets to FITS keywords. likely mission-specific. default list is for NH, adapted from Benjamin Sharkey's spiceypy code.
-    ConfigKey.SPICE_BODY_FRAMES: 'body_frames.json', #lookup table of body-fixed reference frames for targets. default list is specific to NH targets.
-    ConfigKey.SPICE_FITS_KWS: 'fits_spice_kws.json', #lookup table of FITS keywords that encode informaion needed for SPICE calculattions. likely missiong-specific. default list is for NH.
-    ConfigKey.SPICE_INSTR_FRAME_PARAMS: 'instr_frame_params.json', #helper dictionary with parameters defining instrument reference frames for SPICE calculations. default list is specific to NH instruments.
+    ConfigKey.SPICE_EQUATIONS: 'spice/spice_equations.json', #set of equations for calculating SPICE geometry kets to FITS keywords. likely mission-specific. default list is for NH, adapted from Benjamin Sharkey's spiceypy code.
+    ConfigKey.SPICE_BODY_FRAMES: 'spice/body_frames.json', #lookup table of body-fixed reference frames for targets. default list is specific to NH targets.
+    ConfigKey.SPICE_FITS_KWS: 'spice/fits_spice_kws.json', #lookup table of FITS keywords that encode informaion needed for SPICE calculattions. likely missiong-specific. default list is for NH.
+    ConfigKey.SPICE_INSTR_FRAME_PARAMS: 'spice/instr_frame_params.json', #helper dictionary with parameters defining instrument reference frames for SPICE calculations. default list is specific to NH instruments.
     ConfigKey.SPICE_SPACECRAFT: 'NH', #NAIF ID of the spacecraft, used in SPICE calculations.
     ConfigKey.SPICE_INERTIAL_FRAME: 'J2000', #default inertial reference frame.
     ConfigKey.SPICE_ABCORR: 'LT+S' #SPICE setting for aberration corrections due to light travel time. LT+S corrects for "for one-way light time and stellar aberration using a Newtonian formulation."

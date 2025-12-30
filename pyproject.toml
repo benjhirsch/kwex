@@ -33,6 +33,7 @@ include = ["kwex*"]
 
 [tool.setuptools.package-data]
 kwex = [
-    "resources/*.*",
-    "velocity/java/*.*"
+    "resources/java/*.*",
+    "resources/pds3/*.*",
+    "resources/spice/*.*"
 ]

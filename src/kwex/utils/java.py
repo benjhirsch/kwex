@@ -18,9 +18,9 @@ def compile_check(java_class: str, java_source: str) -> tuple[bool, int]:
         
         newer_source = newer(java_source, java_class)
         if newer_source:
-            get_logger().info(f'{java_source} is newer than {java_class}.')
+            get_logger().info(f'{java_source.name} is newer than {java_class.name}.')
     else:
-        get_logger().info(f'{java_class} does not exist.')
+        get_logger().info(f'{java_class.name} does not exist.')
 
     return (not class_exists or incompatible_java or newer_source), system_java_version
 
