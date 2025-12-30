@@ -1,0 +1,171 @@
+{
+    "label": {
+        "TARGET_NAME": "\"ASTEROID 486958 (2014 MU69)\"",
+        "INSTRUMENT_HOST_NAME": "\"NEW HORIZONS\"",
+        "PTR_HEADER": "\"LOR_0396683548_0X633_SCI.FIT\"",
+        "EXPOSURE_DURATION": {
+            "value": "29.96760",
+            "unit": "s"
+        },
+        "QUATERNION": [
+            "0.6643495622",
+            "0.1317140440",
+            "-0.1220421059",
+            "0.7255320767"
+        ],
+        "HEADER": {
+            "BYTES": "34560",
+            "HEADER_TYPE": "\"FITS\"",
+            "INTERCHANGE_FORMAT": "\"BINARY\"",
+            "RECORDS": "12",
+            "DESCRIPTION": "\"     FITS format defined in NASA/Science                                       \n     Office Standards Technology 100-1.0                                       \n                                                                               \n By mutual agreement with PDS-SBN, FITS headers are the domain of the NH       \n Project and were not part of the peer review beyond adherence to the          \n FITS standard.  FITS header values, especially geometric conventions          \n regarding phase angle, direction of supplied vectors and sense of light       \n time and stellar aberration corrections, were chosen to serve                 \n operational purposes and should be used with care.                            \n   \"                                                                           \n"
+        },
+        "IMAGE": {
+            "DESCRIPTION": "\"     FITS PDU                                                                  \n       PDU                                                                     \n                                                                               \n     Calibrated data image                                                     \n     - Corrections applied:                                                    \n       - Bias subtraction                                                      \n       - Smear removal (if non-zero exposure)                                  \n       - Flatfield correction (if non-zero exposure)                           \n       - Absolute calibration                                                  \n         - N.B. NO pixel values are CHANGED                                    \n         - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)                 \n         - ABSCCORR only adds conversion factors for                           \n           - radiance and irradiance e.g. RPLUTO; PPHOLUS                      \n     - Corrections omitted:                                                    \n       - Image subtraction                                                     \n       - Signal linearization                                                  \n       - CTI correction                                                        \n       - Smear removal (if zero exposure)                                      \n       - Dark subtraction                                                      \n       - Flatfield correction (if zero exposure)                               \n       - Geometric correction                                                  \n       - Geometric correction                                                  \n     See the data set documentation, specifically the                          \n     SOC Instrument Interface Control Document (ICD),                          \n     for more details.                                                         \n   \"                                                                           \n",
+            "UNIT": "\"DATA NUMBER\"",
+            "SAMPLE_BITS": "32",
+            "SAMPLE_TYPE": "\"IEEE_REAL\"",
+            "AXIS_ORDER_TYPE": "\"FIRST_INDEX_FASTEST\"",
+            "LINE_DISPLAY_DIRECTION": "\"UP\"",
+            "SAMPLE_DISPLAY_DIRECTION": "\"RIGHT\"",
+            "LINE_SAMPLES": "256",
+            "LINES": "256"
+        },
+        "EXTENSION_CALIB_ERROR_EST_HEADER": {
+            "BYTES": "2880",
+            "HEADER_TYPE": "\"FITS\"",
+            "INTERCHANGE_FORMAT": "\"BINARY\"",
+            "RECORDS": "1",
+            "DESCRIPTION": "\"     This is the FITS header for                                               \n       FITS EDU number:  1                                                     \n       FITS EDU name:                                                          \n         LORRI Error image                                                     \n   \"                                                                           \n"
+        }
+    },
+    "fits": {
+        "APID": "0x633",
+        "iterate": {
+            "CRPIX": {
+                "1": 128.5,
+                "2": 128.5
+            },
+            "SPCK": {
+                "0001": "nh_pred_20060119_20100101_od032.bsp",
+                "0002": "nh_pred_20061001_20100101_od040.bsp",
+                "0003": "nh_pred_20070307_20100101_od041.bsp",
+                "0004": "nh_pred_20070319_20150901_od077.bsp",
+                "0005": "nh_pred_20120501_20160913_od091.bsp",
+                "0006": "nh_pred_20150801_20190901_od126.bsp",
+                "0007": "nh_pred_20161201_20250101_od132.bsp",
+                "0008": "nh_pred_20161202_20250101_od134.bsp",
+                "0009": "nh_pred_20180601_20250101_od146.bsp",
+                "0010": "nh_pred_20190101_20260101_od153.bsp",
+                "0011": "nh_pred_20190101_20270101_od156.bsp",
+                "0012": "17258_cmd.bc",
+                "0013": "18226_cmd.bc",
+                "0014": "18240_cmd.bc",
+                "0015": "18254_cmd.bc",
+                "0016": "18270_cmd.bc",
+                "0017": "18287_cmd.bc",
+                "0018": "18302_cmd.bc",
+                "0019": "18315_cmd.bc",
+                "0020": "18330_cmd.bc",
+                "0021": "18344_cmd.bc",
+                "0022": "18359_cmd.bc",
+                "0023": "19003_cmd.bc",
+                "0024": "19059_cmd.bc",
+                "0025": "19073_cmd.bc",
+                "0026": "19234_cmd.bc",
+                "0027": "naif0012.tls",
+                "0028": "new-horizons_2746.tsc",
+                "0029": "nh_stars_kbo_centaur_ppinp.tpc",
+                "0030": "pck00010.tpc",
+                "0031": "nh_v220.tf",
+                "0032": "nh_allinstruments_v002.ti",
+                "0033": "nh_alice_v200.ti",
+                "0034": "nh_lorri_v201.ti",
+                "0035": "nh_pepssi_v110.ti",
+                "0036": "nh_ralph_v100.ti",
+                "0037": "nh_rex_v100.ti",
+                "0038": "nh_sdc_v101.ti",
+                "0039": "nh_swap_v200.ti",
+                "0040": "nh_soc_misc_v001.tf",
+                "0041": "sb-2002jf56-2.bsp",
+                "0042": "jup260.bsp",
+                "0043": "kbo_centaur_horizons_20131129.bsp",
+                "0044": "kbo_centaur_20170422.bsp",
+                "0045": "kbo_centaur_20200430.bsp",
+                "0046": "nh_extras.bsp",
+                "0047": "nh_stars.bsp",
+                "0048": "2002_KX14_20160411.bsp",
+                "0049": "nh_2011_HJ103_20170920.bsp",
+                "0050": "nh_2012_HE85_20170808.bsp",
+                "0051": "nh_2012_HZ84_20170808.bsp",
+                "0052": "nh_2011_JY31_20190804.bsp",
+                "0053": "nh_2013_LU35_20171205.bsp",
+                "0054": "nh_2020KU11_20201029a_type5.bsp",
+                "0055": "nh_B6600475_20201029a_type5.bsp",
+                "0056": "nh_P4856186_20210204a_type5.bsp",
+                "0057": "nh_2020KR11_20210204a_type5.bsp",
+                "0058": "nh_2020KP11_20210305a_type5.bsp",
+                "0059": "nh_2020KT11_20201216a_type5.bsp",
+                "0060": "nh_2020KO11_20201029a_type5.bsp",
+                "0061": "Huya_20160411.bsp",
+                "0062": "Pholus_20160411.bsp",
+                "0063": "nh_nep081.bsp",
+                "0064": "nh_ura111.bsp",
+                "0065": "NavPE_de433_od156.bsp",
+                "0066": "NavSE_plu047_od123.bsp",
+                "0067": "NavSBE_2014MU69_od156.bsp",
+                "0068": "nh_nep_ura_000.bsp",
+                "0069": "nh_recon_e2j_v1.bsp",
+                "0070": "nh_recon_j2sep07_prelimv1.bsp",
+                "0071": "nh_recon_pluto_od122_v01.bsp",
+                "0072": "merged_nhpc_2006_v001.bc",
+                "0073": "merged_nhpc_2007_v001.bc",
+                "0074": "merged_nhpc_2008_v001.bc",
+                "0075": "merged_nhpc_2009_v001.bc",
+                "0076": "merged_nhpc_2010_v001.bc",
+                "0077": "merged_nhpc_2011_v001.bc",
+                "0078": "merged_nhpc_2012_v001.bc",
+                "0079": "merged_nhpc_2013_v001.bc",
+                "0080": "merged_nhpc_2014_v001.bc",
+                "0081": "merged_nhpc_2015_v039.bc",
+                "0082": "merged_nhpc_2016_v003.bc",
+                "0083": "merged_nhpc_2017_v014.bc",
+                "0084": "merged_nhpc_2018_v100.bc",
+                "0085": "merged_nhpc_2019_v029.bc",
+                "0086": "merged_nhpc_2020_v016.bc",
+                "0087": "merged_nhpc_2021_v010.bc",
+                "0088": "merged_nhpc_2022_01_v011.bc",
+                "0089": "merged_nhpc_2022_02_v003.bc",
+                "0090": "merged_nhpc_2022_03_v010.bc"
+            }
+        },
+        "SPCK0083": "merged_nhpc_2017_v014.bc",
+        "ext1": {
+            "BITPIX": -32,
+            "NAXIS": 2,
+            "iterate": {
+                "TEST": {
+                    "1": "value1",
+                    "2": "value2",
+                    "3": "value3"
+                }
+            },
+            "unit": {
+                "TEST1": "tests/second"
+            }
+        },
+        "unit": {
+            "SPCBRRA": "degrees"
+        }
+    },
+    "spice": {
+        "SPCBRRA": 274.73172287045094,
+        "SPCEMEN": 179.5867131967098,
+        "SPCQA": 0.8228621275483177,
+        "SPCESCRN": 6186225022.106121,
+        "SPCSSCX": 1736301665.1282005,
+        "SPCPAXIN": 89.58671319670981,
+        "SPCTSCLA": -8.39918302345119,
+        "PHASE_ANGLE": 11.261060755072133
+    }
+}

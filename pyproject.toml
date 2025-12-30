@@ -14,6 +14,7 @@ authors = [
 requires-python = ">=3.11"
 
 dependencies = [
+    "regex",
     "numpy",
     "astropy",
     "spiceypy",
@@ -21,7 +22,18 @@ dependencies = [
 ]
 
 [project.scripts]
-kwex = "cli:main"
+kwex = "kwex.cli:main"
 
-[tools.setuptools.packages.find]
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
 include = ["kwex*"]
+
+[tool.setuptools.package-data]
+kwex = [
+    "resources/java/*.*",
+    "resources/pds3/*.*",
+    "resources/spice/*.*"
+]

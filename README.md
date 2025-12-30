@@ -37,7 +37,7 @@ kwex comes with a number of default configuration settings which can either be o
 | Key | Default | Values | Description |
 |-----|---------|--------|-------------|
 | logging | ENABLED | ENABLED, DISABLED | kwex can either log or not log runtime and debugging info. Critical errors are logged regardless of settings. |
-| log_output | tmp/kwex.log | CONSOLE, file | By default, a log is created in the tmp directory. A setting of CONSOLE will print to the console instead. |
+| log_output | kwex.log | CONSOLE, file | By default, a log is created in your current working directory. A setting of CONSOLE will print to the console instead. |
 | warning_output | ERROR | ERROR, CONSOLE, INFO | Warnings are issued when kwex fails in some non-fatal way. By default, these messages are treated as errors and terminate the program. Instead, they can be treated identical to regular logs (INFO) or go to console but not end the program (CONSOLE). |
 | output_check | DISABLED | ENABLED, DISABLED | Enable to check output files for kwex failures and log a list of those files at program end. |
 | recursive_input_dir | DISABLED | ENABLED, DISABLED | Enable to search all subdirectories for --input path/to/dir. |
@@ -48,10 +48,10 @@ kwex comes with a number of default configuration settings which can either be o
 | output_ext | .lblx | .* | By default, kwex produces .lblx output files. Be sure to include a period before the extension. |
 | data_output | IGNORE | IGNORE, COPY, MOVE | By default, kwex does nothing with source product data files. Instead, you can COPY or MOVE them to the output location. |
 | spice_kernel | n/a | *.tm | None by default. Supply whichever metakernel is needed for your data. |
-| spice_equations | [spice_equations.json](resources/spice_equations.json) | *.json | Default file has equations for computing New Horizons SPICE geometry. |
-| body_frames | [body_frames.json](resources/body_frames.json) | *.json | Body-fixed reference frames used by SPICE. Default list is based on New Horizons targets. |
-| spice_fits_kws | [spice_fits_kws.json](resources/fits_spice_kws.json) | *.json | Mapping from FITS keywords to quantities needed for SPICE computations. Default list is based on New Horizons data. |
-| instr_frame_params | [instr_frame_params.json](resources/instr_frame_params.json) | *.json | Dictionary with parameters defining instrument reference frames. Default is for New Horizons instruments. |
+| spice_equations | [spice_equations.json](src/kwex/resources/spice/spice_equations.json) | *.json | Default file has equations for computing New Horizons SPICE geometry. |
+| body_frames | [body_frames.json](src/kwex/resources/spice/body_frames.json) | *.json | Body-fixed reference frames used by SPICE. Default list is based on New Horizons targets. |
+| spice_fits_kws | [spice_fits_kws.json](src/kwex/resources/spice/fits_spice_kws.json) | *.json | Mapping from FITS keywords to quantities needed for SPICE computations. Default list is based on New Horizons data. |
+| instr_frame_params | [instr_frame_params.json](src/kwex/resources/spice/instr_frame_params.json) | *.json | Dictionary with parameters defining instrument reference frames. Default is for New Horizons instruments. |
 | spice_spacecraft | NH | [SPICE spacecraft names](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft) | Default is NH. Change as necessary for mission. |
 | spice_frame | J2000 | [SPICE inertial frames](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html#Complete%20List%20of%20%60%60Built%20in''%20Inertial%20Reference%20Frames) | Default is J2000. This is mostly used as an intermediary, so unless you have quantities that need to be comptued in a different inertial frame, leave this alone. |
 | abcorr | LT+S | [SPICE aberration identifiers](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/abcorr.html#SPICE%20Aberration%20Identifiers%20also%20called%20Flags) | Default is LT+S. See SPICE documentation for details. |
@@ -105,12 +105,12 @@ To get the `<unit>`, write:
 
 `$label.KEYWORD.unit`
 
-Some PDS3 keywords are not valid variable names in Velocity/Java. To point to these keywords in a template, a substitute variable name is required. Common substitutes are defined in [var_sub.json](resources/var_sub.json). More substitutes can be added to this file. Each entry begins with a substitute string that will be used in the template file, followed by the `pos` parameter, which indicates where the substitute string appears in a variable name (`start`, `in`, or `end`), and the `sub` parameter, which is the string in the PDS3 keyword that needs replacing.
+Some PDS3 keywords are not valid variable names in Velocity/Java. To point to these keywords in a template, a substitute variable name is required. Common substitutes are defined in [var_sub.json](src/kwex/resources/pds3/var_sub.json). More substitutes can be added to this file. Each entry begins with a substitute string that will be used in the template file, followed by the `pos` parameter, which indicates where the substitute string appears in a variable name (`start`, `in`, or `end`), and the `sub` parameter, which is the string in the PDS3 keyword that needs replacing.
 
 For example, PDS3 keywords such as `^Header` are not valid variable names in Java due to the `^` character. The first entry in var_sub.json indicates that you can subtitute in `PTR_` in place of `^` at the beginning of a variable name.
 
 ### SPICE Keywords
-The "source" for SPICE keywords is [spice_equations.json](resources/spice_equations.json). This file maps keywords to SPICE equations necessary for computing the values of those keywords. A SPICE metakernel file (as well as all the kernels it references and the spiceypy library) is necessary to perform these calculations. You can specify a different (or updated) calculation file via config options. It can be updated to include more keywords/equations, but a very limited number of functions and variables are available for use. See [names_and_functions.txt](resources/names_and_functions.txt) for a list.
+The "source" for SPICE keywords is [spice_equations.json](src/kwex/resources/spice/spice_equations.json). This file maps keywords to SPICE equations necessary for computing the values of those keywords. A SPICE metakernel file (as well as all the kernels it references and the spiceypy library) is necessary to perform these calculations. You can specify a different (or updated) calculation file via config options. It can be updated to include more keywords/equations, but a very limited number of functions and variables are available for use. See [names_and_functions.txt](names_and_functions.txt) for a list.
 
 ### Java HashMaps and ArrayLists
 If your extracted keyword values aren't directly analogous to attributes in your template, you can make use of the Java tools underneath the Velocity engine. In Velocity, a hashmap can be defined like so:
@@ -147,6 +147,6 @@ For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at 
 
 ## Installation
 
-Clone or otherwise download this repo, unzip, and run pip install on the local kwex directory. Python >3.11 is required along with `numpy`, `astropy`, `spiceypy`, and `simpleeval`. This will create an executable command-line tool for running the main kwex script.
+Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
 
-kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/velocity/java) directory, but you will need some Java Runtime Environment installed.
+kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/kwex/resources/java) directory, but you will need some Java Runtime Environment installed.

@@ -1,4 +1,4 @@
-regression test command (from kwex directory): kwex templates/regression_test.vm testing/regression_test.fit testing/regression_test.lbl --output testing/output/regression_test.lblx --log testing/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
+regression test command (from kwex directory): kwex templates/regression_test.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
 
 PDS3 label testing
 ==================
@@ -30,25 +30,25 @@ FITS header testing
 
 APID (basic pointer): $fits.APID
 
-#foreach ($x in $fits.CRPIX)
+#foreach ($x in $fits.iterate.CRPIX)
 CRPIX${foreach.index} (iterative keywords): $x
 #end
 
 SPCK0083 (iterative w/ fits index): $fits.SPCK0083
-SPCK0084 (iterative w/ array indexing): $fits.SPCK["0084"]
+SPCK0084 (iterative w/ array indexing): $fits.iterate.SPCK["0084"]
 
 ext1 BITPIX (extension access): $fits.ext1.BITPIX
 ext1 NAXIS (retained extension access): $fits.ext1.NAXIS
 
 (extension plus loop)
-#foreach ($t in $fits.ext1.TEST)
+#foreach ($t in $fits.ext1.iterate.TEST)
 $t
 #end
 (loop end)
 
-SPCBRRA unit (unit from fits comments): $fits.units.SPCBRRA
+SPCBRRA unit (unit from fits comments): $fits.unit.SPCBRRA
 
-TEST1 unit (units on extension): $fits.ext1.units.TEST1
+TEST1 unit (units on extension): $fits.ext1.unit.TEST1
 
 
 SPICE computation testing
