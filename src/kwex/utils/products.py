@@ -3,8 +3,7 @@ from collections import OrderedDict
 
 from ..constants import *
 from ..names import ConfigKey, ConfigState, Source
-from ..loggers.logger import get_logger
-from ..loggers.interrupter import error_handler, warning_handler
+from ..loggers import *
 from ..config import get_config
 from ..state import run_state
 from .sources import get_input, source_id, source_check
@@ -44,10 +43,10 @@ def get_products(source_set: set) -> OrderedDict:
     """ Parser that returns a list of paired files comprising a PDS3 object: PDS3 label and FITS data file """
     product_list = OrderedDict()
 
-    for source in source_set:
+    for source in sorted(source_set):
         source_root = source.with_suffix('')
         if source_root in product_list:
-            if product_list[source_root].files[source_id(source)] is None:
+            if source_id(source) not in product_list[source_root].files or product_list[source_root].files[source_id(source)] is None:
                 product_list[source_root].add_file(source)
         else:
             product = Product(source)
@@ -58,29 +57,28 @@ def get_products(source_set: set) -> OrderedDict:
                 pair_source = type_switch[type_switch.index(sid)^1]
                 pair_found = product.find_pair(pair_source)
                 if not pair_found:
-                    get_logger().info(f'Unpaired product {source.name} found.')
+                    info_logger(f'Unpaired product {source.name} found')
                     if not get_config(ConfigKey.ALLOW_UNPAIRED):
-                        warning_handler(f'Removing {source.name} from product list.')
+                        warning_handler(f'Removing {source.name} from product list')
 
             if not get_config(ConfigKey.FIND_PAIR) or pair_found or get_config(ConfigKey.ALLOW_UNPAIRED):
                 product_list[product.root] = product
 
     for root, product in product_list.copy().items():
         if None in product.files.values():
-            get_logger().info(f'Unpaired product {Path(root).name} found.')
+            info_logger(f'Unpaired product {Path(root).name} found')
             if not get_config(ConfigKey.ALLOW_UNPAIRED):
-                warning_handler(f'Removing {Path(root).name} from product list.')
+                warning_handler(f'Removing {Path(root).name} from product list')
                 q = product_list.pop(root)
 
-    error_handler(lambda: len(product_list) > 0, 'No source products found.')
-    get_logger().info(f'{len(product_list)} products identified.')
+    error_handler(lambda: len(product_list) > 0, 'No source products found')
+    info_logger(f'{len(product_list)} products identified')
 
     return product_list
 
-def get_output(product: Product) -> Path:
+def get_output(output: str, product: Product) -> Path:
     """ Utility that constructs an output Path object from an input product """
     ext = get_config(ConfigKey.OUTPUT_EXT)
-    output = run_state.args.output
     root_path = Path(product.root).expanduser().resolve()
 
     if output:
@@ -89,12 +87,12 @@ def get_output(product: Product) -> Path:
             #for --output argument of path/to/file.ext, just return that (very bad option if you have multiple input files)
             output_return = output_path
         else:
-            error_handler(lambda: output_path.is_dir(), f'{output_path.as_posix()} is not a valid directory.')
+            error_handler(lambda: output_path.is_dir(), f'{output_path.as_posix()} is not a valid directory')
             #for path/to/directory argument, preserve directory structure after input root
             input_root = run_state.input_root
             if input_root:
                 input_root = Path(input_root).expanduser().resolve()
-                error_handler(lambda: input_root.is_dir(), f'{input_root.as_posix()} is not a valid directory.')
+                error_handler(lambda: input_root.is_dir(), f'{input_root.as_posix()} is not a valid directory')
 
                 input_rel = root_path.relative_to(input_root)
                 output_plus_input = (output_path / input_rel).with_suffix(ext)
@@ -115,12 +113,12 @@ def get_output(product: Product) -> Path:
         if data_product:
             data_output = output_return.with_suffix(data_product.suffix)
             verb = {ConfigState.COPY: 'Copy', ConfigState.MOVE: 'Mov'}[get_config(ConfigKey.DATA_OUTPUT)]
-            get_logger().info(f'{verb}ing {data_product.name} to {data_output.parent.as_posix()}...')
+            info_logger.info(f'{verb}ing {data_product.name} to {data_output.parent.as_posix()}')
             shutil.copy2(data_product.as_posix(), data_output.as_posix())
                 
     return output_return
 
-def get_input_root(product_list: OrderedDict[Product]) -> Path:
+def _get_input_root(product_list: OrderedDict[Product]) -> Path:
     """ Utility to determine last common root directory of product list. """
     if len(product_list) > 1:
         parts_list = [Path(product).parts for product in product_list]
@@ -134,17 +132,14 @@ def get_input_root(product_list: OrderedDict[Product]) -> Path:
 
         input_root = Path(*common_parts).expanduser().resolve()
         if input_root == Path('/') or len(input_root.parts) < 2:
-            warning_handler('Ambiguous input root from --input parameter. Specify with --input-root parameter.')
+            warning_handler('Ambiguous input root from --input parameter. Specify with --input-root parameter')
 
         return input_root
     
-def get_files():
+def get_files(input: list, input_root: str):
     """ Container function that gets source files and product list from command-line arguments """
-    input = run_state.args.input
-    input_root = run_state.args.input_root
-
     source_set = get_input(input)
     product_list = get_products(source_set)
-    run_state.input_root = input_root or get_input_root(product_list)
+    run_state.input_root = input_root or _get_input_root(product_list)
 
     return product_list

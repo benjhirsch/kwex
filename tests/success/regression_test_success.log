@@ -1,9 +1,11 @@
-2025-12-18 11:27:03.202: 1 products identified.
-2025-12-18 11:27:03.202: 13 PDS3 label keywords found in template.
-2025-12-18 11:27:03.202: 9 FITS keywords found in template.
-2025-12-18 11:27:03.202: 8 SPICE keywords found in template.
-2025-12-18 11:27:03.362: Reading PDS3 label regression_test.lbl...
-2025-12-18 11:27:03.362: Reading FITS file regression_test.fit...
-2025-12-18 11:27:03.378: Calculating SPICE keywords...
-2025-12-18 11:27:03.394: Recording keyword values in vals_regression_test.json...
-2025-12-18 11:27:03.394: Activating Velocity engine and writing PDS4 label regression_test.lblx...
+2026-01-07 20:43:51.124: 1 products identified
+2026-01-07 20:43:51.124: 13 PDS3 label keywords found in template
+2026-01-07 20:43:51.124: 9 FITS keywords found in template
+2026-01-07 20:43:51.124: 8 SPICE keywords found in template
+2026-01-07 20:43:51.347: Reading PDS3 label regression_test.lbl
+2026-01-07 20:43:51.363: Extracting values of $label.KEYWORD template pointers from PDS3 label
+2026-01-07 20:43:51.363: Reading FITS file regression_test.fit
+2026-01-07 20:43:51.363: Extracting values of $fits.KEYWORD template pointers from FITS file
+2026-01-07 20:43:51.363: Computing values of $spice.KEYWORD template pointers
+2026-01-07 20:43:51.379: Recording keyword values in vals_regression_test.json
+2026-01-07 20:43:51.379: Activating Velocity engine and writing PDS4 label regression_test.lblx

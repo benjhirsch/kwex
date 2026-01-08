@@ -68,7 +68,12 @@ A few basics are necessary, however. The `.vm` template file acts as an input fi
 where `source` is one of `fits`, `label`, or `spice`, and `KEYWORD` is (usually) exactly as it appears in the source.
 
 ### FITS Keywords
-A number of edge cases exist for FITS keywords, which are handled by adding flags to template pointer. Multiple flags can be added and order is unimportant, so long as `$fits` is first and `keyword` is last. 
+A number of edge cases exist for FITS keywords, which are handled by adding flags to template pointer. Multiple flags can be added and order is unimportant, so long as `$fits` is first and `keyword` is last. Because `keyword` must be last, you cannot use Java methods on `$fits` pointers. Instead you can assign the value of the pointer to a local variable, then use the Java method on that local variable. For example:
+
+```
+#set ( $localKeyword = $fits.KEYWORD )
+$localKeyword.toLowerCase()
+```
 
 By default, kwex searches for keywords in the primary header. To specify a different header, write the pointer as:
 
@@ -85,6 +90,10 @@ where `base_keyword` is the name of the keyword sans any index value, e.g. `VECT
 To access the bracketed `[unit]` in a FITS keyword's comment field, write:
 
 `$fits.unit.KEYWORD`
+
+To access a FITS header's `astropy.io.fits` metadata, such as `hdrLoc` or `datSpan`, write:
+
+`$fits(.extN).fileinfo.KEYWORD`
 
 ### PDS3 Keywords
 This is mostly unproblematic. To point to a keyword within a PDS3 nested object, write:

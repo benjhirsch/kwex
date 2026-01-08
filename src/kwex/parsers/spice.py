@@ -6,20 +6,13 @@ import numpy as np
 
 from ..constants import *
 from ..config import get_config, path
-from ..state import run_state
 from ..names import SpiceKey, ConfigKey, Source
-from ..utils.sources import check_kernel
-from ..loggers.interrupter import error_handler, warning_handler
-from ..loggers.logger import get_logger
-from ..utils.values import add_to_val, init_eval
+from ..state import run_state
+from ..utils import *
+from ..loggers import *
 
 class SpiceWrapper:
     """ Wrapper class for spiceypy functions that creates an object with properties to a specific data product (e.g. ephemeris, instrument frame, target id, etc.) """
-    body_frames = json.loads(path(ConfigKey.SPICE_BODY_FRAMES).read_text())
-    fits_spice_kws = json.loads(path(ConfigKey.SPICE_FITS_KWS).read_text())
-    instr_frame_params = json.loads(path(ConfigKey.SPICE_INSTR_FRAME_PARAMS).read_text())
-    abcorr = get_config(ConfigKey.SPICE_ABCORR)
-
     def __init__(self, fits_kws: dict):
         self._fits_kws = fits_kws
         sclk = self._get_fits_kw(SpiceKey.SPACECRAFT_CLOCK)
@@ -40,23 +33,17 @@ class SpiceWrapper:
         self._target_pole_inertial_frame_rec = None
         self._target_pole_img_coord = None
         self._north_img_coord = None
+        self._boresight_basis_vector = None
+        self._instr_uv_plane = None
 
         self._state_dict = defaultdict(lambda: defaultdict(lambda: None))
-
-        try:
-            self._boresight_basis_vector = np.array(SpiceWrapper.instr_frame_params[self._instr_frame][SpiceKey.BORESIGHT_BASIS_VECTOR])
-            self._instr_uv_plane = SpiceWrapper.instr_frame_params[self._instr_frame][SpiceKey.INSTR_UV_PLANE]
-        except:
-            warning_handler(f'Invalid instrument frame {self._instr_frame}.')
-            self._boresight_basis_vector = np.array([0, 0, -1])
-            self._instr_uv_plane = ['+u', '+v', '']
 
     def _get_fits_kw(self, keyword: SpiceKey) -> str:
         """ SpiceWrapper helper method that retrieves a FITS keyword value corresponding to a quantity necessary for spice computations """
         try:
-            return self._fits_kws[SpiceWrapper.fits_spice_kws[keyword]]
+            return self._fits_kws[run_state.fits_spice_kws[keyword]]
         except:
-            warning_handler(f'{keyword} not found.')
+            warning_handler(f'{keyword} not found')
 
     def _get_spice_id(self, target: str, backup_target=None) -> tuple[str, str]:
         """ SpiceWrapper method that retrieves target spice ID from target spice name. """
@@ -74,6 +61,28 @@ class SpiceWrapper:
         return stid, stn
     
     #formulas that get reused are declared as properties with a gettr function that calculates the property the first time and simply returns it on subsequent calls
+    @property
+    def boresight_basis_vector(self) -> np.ndarray:
+        """ SpiceWrapper property that fetches boresight basis vector from instrument parameter file """
+        if self._boresight_basis_vector is None:
+            try:
+                self._boresight_basis_vector = np.array(run_state.instr_frame_params[self._instr_frame][SpiceKey.BORESIGHT_BASIS_VECTOR])
+            except:
+                warning_handler(f'Invalid instrument frame {self._instr_frame}')
+                self._boresight_basis_vector = np.array([0, 0, -1])
+        return self._boresight_basis_vector
+    
+    @property
+    def instr_uv_plane(self) -> list:
+        """ SpiceWrapper property that fetches instrument plane definition from instrument parameter file """
+        if self._instr_uv_plane is None:
+            try:
+                self._instr_uv_plane = run_state.instr_frame_params[self._instr_frame][SpiceKey.INSTR_UV_PLANE]
+            except:
+                warning_handler(f'Invalid instrument frame {self._instr_frame}')
+                self._instr_uv_plane = ['+u', '+v', '']
+        return self._instr_uv_plane
+
     @property
     def i2j_mat(self) -> np.ndarray:
         """ SpiceWrapper property that calculates and returns matrix for converting instrument position vectors to some inertial reference frame's position vectors. """
@@ -99,7 +108,7 @@ class SpiceWrapper:
         """ SpiceWrapper property that calculates and returns spacecraft position relative to the Sun. """
         if self._sol_pos is None:
             try:
-                self._sol_pos, _  = spice.spkpos('Sun', self._et, self._instr_frame, SpiceWrapper.abcorr, self.spacecraft)
+                self._sol_pos, _  = spice.spkpos('Sun', self._et, self._instr_frame, run_state.abcorr, self.spacecraft)
             except:
                 pass
         return self._sol_pos
@@ -144,9 +153,9 @@ class SpiceWrapper:
     def clock_angle(self, vector: np.ndarray) -> np.ndarray:
         """ SpiceWrapper method that projects a 3D vector from the instrument's reference frame onto the instrument's image plane, then calculates the clock angle of that vector. """
         #identifies which instrument frame axes correspond to horizontal (u) and vertical (v) axes on the image plane
-        comp_idx = tuple([i in comp for comp in self._instr_uv_plane].index(True) for i in ['v', 'u'])
+        comp_idx = tuple([i in comp for comp in self.instr_uv_plane].index(True) for i in ['v', 'u'])
         #gets the component values of the vector for those axes and flips sign if necessary
-        comp_vals = tuple([vector[i] * (-1)**(self._instr_uv_plane[i].startswith('-')) for i in comp_idx])
+        comp_vals = tuple([vector[i] * (-1)**(self.instr_uv_plane[i].startswith('-')) for i in comp_idx])
         return np.arctan2(*comp_vals) * spice.dpr() % 360
     
     def instrument_position_angle(self, axis: str) -> float:
@@ -155,7 +164,7 @@ class SpiceWrapper:
         try:
             return (self.clock_angle(self.north_img_coord) + axis_rot_dict[axis.lower()]) % 360
         except:
-            warning_handler(f'Invalid position angle axis {axis}.')
+            warning_handler(f'Invalid position angle axis {axis}')
     
     def state_vector_component(self, from_body: str, to_body: str, vector: str, component: str) -> float:
         """ SpiceWrapper method that returns value stored in _state_dict or calculates vector from 'from_body' to 'to_body' in selected inertial reference frame. 'vector' takes 'position' or 'velocity'. 'component' takes 'x', 'y', or 'z'. """ 
@@ -164,11 +173,11 @@ class SpiceWrapper:
         try:
             state_idx = vector_dict[vector.lower()] + component_dict[component.lower()]
         except KeyError:
-            warning_handler('Invalid vector name or component.')
+            warning_handler('Invalid vector name or component')
 
         if self._state_dict[from_body][to_body] is None:
             try:
-                self._state_dict[from_body][to_body] = spice.spkezr(from_body, self._et, self._ref_frame, SpiceWrapper.abcorr, to_body)[0]
+                self._state_dict[from_body][to_body] = spice.spkezr(from_body, self._et, self._ref_frame, run_state.abcorr, to_body)[0]
             except:
                 return
             
@@ -181,7 +190,7 @@ class SpiceWrapper:
     def sol_phase_ang(self, target_body: str, obs_body: str) -> float:
         """ SpiceWrapper method that calculates solar phase angle in radians between target body and observer. """
         try:
-            phase_angle = spice.phaseq(self._et, target_body, 'SUN', obs_body, SpiceWrapper.abcorr) * spice.dpr()
+            phase_angle = spice.phaseq(self._et, target_body, 'SUN', obs_body, run_state.abcorr) * spice.dpr()
         except spice.SpiceBODIESNOTDISTINCT:
             #if the sun is one of the two arguments, spice.phaseq fails, so return an angle of 0 degrees in that case
             phase_angle = 0
@@ -191,11 +200,11 @@ class SpiceWrapper:
         """ SpiceWrapper method that calculates longitude or latitude in degrees of a subsolar or subspacecraft point on the surface of a target body. """
         try:
             if sc_or_solar.lower() == 'sc':
-                sub = spice.subpnt('NEAR POINT/ELLIPSOID', self.spice_target_name, self._et, SpiceWrapper.body_frames[self.spice_target_name], SpiceWrapper.abcorr, self.spacecraft)
+                sub = spice.subpnt('NEAR POINT/ELLIPSOID', self.spice_target_name, self._et, run_state.body_frames[self.spice_target_name], run_state.abcorr, self.spacecraft)
             elif sc_or_solar.lower() == 'solar':
-                sub = spice.subslr('NEAR POINT/ELLIPSOID', self.spice_target_name, self._et, SpiceWrapper.body_frames[self.spice_target_name], SpiceWrapper.abcorr, self.spacecraft)
+                sub = spice.subslr('NEAR POINT/ELLIPSOID', self.spice_target_name, self._et, run_state.body_frames[self.spice_target_name], run_state.abcorr, self.spacecraft)
         except spice.SpiceNOFRAME:
-            warning_handler(f'No valid body-fixed frame found for {self.spice_target_name}.')
+            warning_handler(f'No valid body-fixed frame found for {self.spice_target_name}')
             return
 
         sub_lat = spice.reclat(sub[0])
@@ -214,15 +223,21 @@ class SpiceWrapper:
             warning_handler(f'Invalid coordinate name {ra_or_dec}')
             return
         
-        radec = spice.recrad(spice.mxv(self.i2j_mat, self._boresight_basis_vector))[coord_idx]
+        radec = spice.recrad(spice.mxv(self.i2j_mat, self.boresight_basis_vector))[coord_idx]
 
         return radec * spice.dpr()
     
 def init_spice(var_list: dict):
     """ Function to load SPICE kernels for SPICE calculations. """
     if len(var_list[Source.SPICE]) > 0:
-        check_kernel(path(ConfigKey.SPICE_KERNEL))
-        kernel = run_state.kernel_path
+        run_state.body_frames = json.loads(path(ConfigKey.SPICE_BODY_FRAMES).read_text())
+        run_state.fits_spice_kws = json.loads(path(ConfigKey.SPICE_FITS_KWS).read_text())
+        run_state.instr_frame_params = json.loads(path(ConfigKey.SPICE_INSTR_FRAME_PARAMS).read_text())
+        run_state.abcorr = get_config(ConfigKey.SPICE_ABCORR)
+
+        run_state.spice_eqns = _get_equations(path(ConfigKey.SPICE_EQUATIONS))
+
+        kernel = check_kernel(path(ConfigKey.SPICE_KERNEL))
         spice.kclear()
         
         if kernel.suffix == '.tm':
@@ -234,36 +249,28 @@ def init_spice(var_list: dict):
         else:
             spice.furnsh(kernel.as_posix())
 
-        spice_eq_path = path(ConfigKey.SPICE_EQUATIONS)
-        with spice_eq_path.open() as f:
-            eq_list = json.load(f)
-        run_state.spice_eqns = eq_list
-
 def get_spice_values(var_list: dict, fits_kws: dict, spice_eqs: dict) -> Path:
     """ Function that calculates SPICE geometry values corresponding to Velocity template variables. Uses a spiceypy wrapper and the simpeleeval library to calculate values. """
     val_list = {Source.SPICE: {}}
 
     #simpleeval evaluator translates str formulations of spice functions into something evaluable
-    if len(var_list[Source.SPICE]) > 0:
-        get_logger().info('Calculating SPICE keywords...')
-        try:
-            ksp = SpiceWrapper(fits_kws[0])
-        except:
-            warning_handler(f'Unable to find FITS keywords necessary for SPICE calculations.')
-            return
+    info_logger('Computing values of $spice.KEYWORD template pointers')
+    try:
+        ksp = SpiceWrapper(fits_kws)
+    except:
+        warning_handler(f'Unable to find FITS keywords necessary for SPICE calculations')
+        return
 
-        evaluator = init_eval(ksp)
+    evaluator = init_eval(ksp)
 
     for keyword in var_list[Source.SPICE]:
         val_list[Source.SPICE].update(add_to_val(keyword=keyword, val_func=lambda x: evaluator.eval(spice_eqs[x]), except_val='KEYWORD NOT RECALCULATED'))
 
     return val_list
 
-def get_equations() -> dict:
+def _get_equations(spice_eq_path: Path) -> dict:
     """ Parser that loads a dictionary of SPICE equations evaluable by SimpleEval. """
-    spice_eqs = path(ConfigKey.SPICE_EQUATIONS)
-    with spice_eqs.open() as f:
-        eq_list = json.load(f)
+    eq_list = json.loads(spice_eq_path.read_text())
 
     #removes namespaces from numpy and spice functions because otherwise they don't work with simpleeval
     for eq in eq_list:

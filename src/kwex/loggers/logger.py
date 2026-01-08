@@ -11,7 +11,7 @@ class LevelBasedFormatter(logging.Formatter):
     FORMATS = {
         logging.INFO: '%(message)s',
         logging.WARNING: 'Issue: %(message)s',
-        logging.ERROR: 'Error: %(message)s\nkwex exited without finishing.'
+        logging.ERROR: 'Error: %(message)s\nkwex exited without finishing'
     }
 
     def format(self, record):
@@ -25,11 +25,15 @@ class LevelBasedFormatter(logging.Formatter):
             datefmt = '%Y-%m-%d %H:%M:%S'
             formatter = logging.Formatter(fmt, datefmt=datefmt)
         else:
-            formatter = logging.Formatter(fmt=self.FORMATS[level])
+            if level == logging.INFO:
+                fmt = self.FORMATS[level] + '...'
+            else:
+                fmt = self.FORMATS[level]
+            formatter = logging.Formatter(fmt=fmt)
 
         return formatter.format(record)
     
-_startup_formatter = logging.Formatter(fmt='Error: %(message)s\nkwex exited without finishing.')
+_startup_formatter = logging.Formatter(fmt='Error: %(message)s\nkwex exited without finishing')
     
 _LOG_INITIALIZED = False
 
@@ -39,6 +43,7 @@ logger.propagate = False
 #we need a basic error handler initialized before command line arguments (which may change log settings) are evaluated
 startup_handler = logging.StreamHandler()
 startup_handler.setFormatter(_startup_formatter)
+startup_handler.setLevel(logging.WARNING)
 logger.addHandler(startup_handler)
 
 def init_log():
@@ -78,3 +83,6 @@ def init_log():
 def get_logger() -> logging.getLogger:
     """ Gettr function for accessing the configured logging object """
     return logging.getLogger('kwex')
+
+def info_logger(message: str):
+    get_logger().info(message)

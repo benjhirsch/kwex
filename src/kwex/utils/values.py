@@ -3,8 +3,7 @@ import simpleeval
 import spiceypy as spice
 import numpy as np
 
-from ..loggers.logger import get_logger
-from ..loggers.interrupter import warning_handler
+from ..loggers import *
 from ..constants import *
 from ..config import get_config
 from ..state import run_state
@@ -31,10 +30,9 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
 def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
     json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
-
-    get_logger().info(f'Recording keyword values in {json_vals.name}...')
-
+    info_logger(f'Recording keyword values in {json_vals.name}')
     json_vals.write_text(json.dumps(val_list, indent=4))
+
     return json_vals
 
 def init_eval(ksp) -> simpleeval.SimpleEval:

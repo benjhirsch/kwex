@@ -23,33 +23,33 @@ QUATERNION, all elements (loops): 0.7255320767
 
 HEADER BYTES (nested object keyword): 34560
 
-IMAGE DESCRIPTION (multi-line values):      FITS PDU                                                                  
-       PDU                                                                     
-                                                                               
-     Calibrated data image                                                     
-     - Corrections applied:                                                    
-       - Bias subtraction                                                      
-       - Smear removal (if non-zero exposure)                                  
-       - Flatfield correction (if non-zero exposure)                           
-       - Absolute calibration                                                  
-         - N.B. NO pixel values are CHANGED                                    
-         - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)                 
-         - ABSCCORR only adds conversion factors for                           
-           - radiance and irradiance e.g. RPLUTO; PPHOLUS                      
-     - Corrections omitted:                                                    
-       - Image subtraction                                                     
-       - Signal linearization                                                  
-       - CTI correction                                                        
-       - Smear removal (if zero exposure)                                      
-       - Dark subtraction                                                      
-       - Flatfield correction (if zero exposure)                               
-       - Geometric correction                                                  
-       - Geometric correction                                                  
-     See the data set documentation, specifically the                          
-     SOC Instrument Interface Control Document (ICD),                          
-     for more details.                                                         
-                                                                              
+IMAGE DESCRIPTION (multi-line values): 
+    FITS PDU
+      PDU
 
+    Calibrated data image
+    - Corrections applied:
+      - Bias subtraction
+      - Smear removal (if non-zero exposure)
+      - Flatfield correction (if non-zero exposure)
+      - Absolute calibration
+        - N.B. NO pixel values are CHANGED
+        - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)
+        - ABSCCORR only adds conversion factors for
+          - radiance and irradiance e.g. RPLUTO; PPHOLUS
+    - Corrections omitted:
+      - Image subtraction
+      - Signal linearization
+      - CTI correction
+      - Smear removal (if zero exposure)
+      - Dark subtraction
+      - Flatfield correction (if zero exposure)
+      - Geometric correction
+      - Geometric correction
+    See the data set documentation, specifically the
+    SOC Instrument Interface Control Document (ICD),
+    for more details.
+  
 
 
 FITS header testing

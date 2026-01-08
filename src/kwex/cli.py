@@ -2,14 +2,12 @@ import argparse
 import sys
 from pathlib import Path
 
-from .config import Config
-from . import config as config_module
-from .state import run_state
+from . import config
 from .names import ConfigKey, ConfigState
 from .constants import *
-from .loggers.interrupter import error_handler
+from .loggers import *
 
-cfg = Config()
+cfg = config.Config()
 
 def cli_override(override: list, log: str) -> dict:
     """CLI function that returns a dictionary of custom configuration values to be used during script execution. """
@@ -39,14 +37,14 @@ def config_checker(config_arg: str) -> tuple[str, str]:
     try:
         key, value = config_arg.split('=')
     except:
-        error_handler(lambda: False, f'{config_arg} is not a valid argument.')
+        error_handler(lambda: False, f'{config_arg} is not a valid argument')
 
     if Path(value).is_dir():
         value = Path(value).expanduser().resolve().as_posix()
     
-    error_handler(lambda: key in config_module.DEFAULTS, f'{key} is not a valid config setting.')
-    error_handler(lambda: key not in CONFIG_STATES or value in CONFIG_STATES[key], f'{value} is not a valid value for {key}.')
-    error_handler(lambda: key not in CONFIG_BOOLEAN or value in CONFIG_ENABLED_DICT, f'{value} is not a valid value for {key}.')
+    error_handler(lambda: key in config.DEFAULTS, f'{key} is not a valid config setting')
+    error_handler(lambda: key not in CONFIG_STATES or value in CONFIG_STATES[key], f'{value} is not a valid value for {key}')
+    error_handler(lambda: key not in CONFIG_BOOLEAN or value in CONFIG_ENABLED_DICT, f'{value} is not a valid value for {key}')
     
     return key, value
 
@@ -71,7 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument('--input-root', metavar='', help='When specifying a different output directory, specify an input directory from which to preserve directory structure.')
     run.add_argument('--log', metavar='', nargs='?', const=ConfigState.BLANK, help='Include to enable logging of debug and runtime information, either to "CONSOLE" or a specified log file.')
     run.add_argument('--override', metavar='', default=None, nargs='+', help='Override one or more config values for this run with syntax <key>=<value>.')
-    run.set_defaults(func=run_kwex)
+    run.set_defaults(func=handle_run)
 
     #set_config command for creating/modifying custom user config file
     set_config_cmd = subparsers.add_parser('set_config', add_help=False)
@@ -104,14 +102,13 @@ def main(argv=None):
 
     return args.func(args)
 
-def run_kwex(args: argparse.Namespace):
+def handle_run(args: argparse.Namespace):
     """ argparse command function for creating configuration object and running main kwex script. """
     #apply config changes from cli and create config object referenced throughout program
     cfg.apply_cli_overrides(cli_override(args.override, args.log))
-    config_module.current = cfg
-    run_state.args = args
-    from .main import run_kwex
-    run_kwex()
+    config.current = cfg
+    from .main import kwex_script
+    kwex_script(args)
 
 def handle_set_config(args: argparse.Namespace):
     """ argparse command function for changing configuration values. """
@@ -120,15 +117,15 @@ def handle_set_config(args: argparse.Namespace):
 
 def handle_get_config(args: argparse.Namespace):
     """ argparse command function for fetching configuration values. """
-    config_module.current = cfg
+    config.current = cfg
 
     for key in cfg.values:
         if key in CONFIG_STATES:
             possible_states = '|'.join([v for v in CONFIG_STATES[key]])
-            print(f'{key}={config_module.get_config(key)} [{possible_states}]')
+            print(f'{key}={config.get_config(key)} [{possible_states}]')
         elif key in CONFIG_BOOLEAN:
             bool_value = {True: ConfigState.ENABLED, False: ConfigState.DISABLED}
-            value = bool_value[config_module.get_config(key)]
+            value = bool_value[config.get_config(key)]
             print(f'{key}={value} [{ConfigState.ENABLED}|{ConfigState.DISABLED}]')
         else:
-            print(f'{key}={config_module.get_config(key)}')
+            print(f'{key}={config.get_config(key)}')
