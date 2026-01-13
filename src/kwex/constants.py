@@ -8,7 +8,7 @@ USER_DIR = Path.home() / '.kwex'
 CONFIG_PATH = USER_DIR / 'config.json'
 
 RESOURCE_PATH = files('kwex.resources')
-VAR_SUB_LIST = RESOURCE_PATH.joinpath('pds3/var_sub.json')
+VAR_SUB_JSON = RESOURCE_PATH.joinpath('pds3/var_sub.json')
 MAJOR_TO_VERSION = RESOURCE_PATH.joinpath('java/major_to_version.json')
 JAVA_SOURCE = RESOURCE_PATH.joinpath('java/VMtoXML.java')
 
@@ -23,9 +23,9 @@ JAR_FILES = ['velocity-1.7.jar',
              'commons-lang-2.4.jar']
 
 RESERVED_XML_CHARS = {
-    '&': 'amp',
-    '<': 'lt',
-    '>': 'gt'
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
 }
 
 EXTENSIONS = {

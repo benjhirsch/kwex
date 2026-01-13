@@ -1,60 +1,65 @@
-import regex as re
+import re
 from astropy.io import fits
 from pathlib import Path
+from collections import defaultdict
 
-from ..names import Source, PointerFlag
+from ..names import Source, PointerFlag, FITS
 from ..loggers import *
 from ..utils.values import add_to_val
+from ..state import run_state
 
-def get_fits(fit: Path) -> dict:
-    """ Wrapper for astropy.fits, returning the header objects in FITS file. """
-    info_logger(f'Reading FITS file {fit.name}')
+EXT_PATTERN = re.compile(r'ext(\d+)')
+UNIT_PATTERN = re.compile(r'\[(.+)\]')
+CHUNK_PATTERN = re.compile(r'([A-Z\-\_]+)(\d*)')
+
+def get_fits(fits_product: Path) -> dict:
+    """ Wrapper for astropy.fits, returning the HDUL from a FITS file. """
+    info_logger('Reading FITS file %s', fits_product.name)
+    fits_obj = defaultdict(dict)
     try:
-        with fits.open(fit) as f:
-            return [hdu for hdu in f]
+        with fits.open(fits_product) as f:
+            for ext in run_state.fits_hdr_list:
+                fits_obj[ext]['header'] = f[ext].header
+                if run_state.fits_fileinfo_check:
+                    fits_obj[ext][PointerFlag.FILEINFO] = f[ext].fileinfo()
+            return fits_obj
     except:
-        warning_handler(f'{fit.name} is not a valid FITS file')
+        warning_handler('%s is not a valid FITS file', fits_product.name)
     
-def get_fits_values(var_list: dict, hdul: list) -> dict:
+def get_fits_values(var_list: dict, fits_obj: dict) -> dict:
     """ Function that finds values of FITS header keywords corresponding to Velocity template variables. Handles multiple extensions. Iterates through keywords with index values. """
-    info_logger(f'Extracting values of $fits.KEYWORD template pointers from FITS file')
+    #info_logger('Extracting values of $fits.KEYWORD template pointers from FITS file')
     val_list = {}
+    iter_list = {}
+
+    for ext in run_state.fits_iter_list:
+        iter_list[ext] = _get_iteratives(fits_obj[ext][FITS.HEADER])
+
     for pointer in var_list[Source.FITS]:
-        kw_parts = pointer.split('.')
-        #the final component for a FITS template pointer is always the keyword
-        keyword = kw_parts.pop()
+        ext_num = pointer[FITS.EXT_NUM]
+        keyword = pointer[FITS.KEYWORD]
 
-        unit_flag = PointerFlag.UNIT in kw_parts
-        iterate_flag = PointerFlag.ITERATE in kw_parts
-        fileinfo_flag = 'fileinfo' in kw_parts
-        ext_flag = re.search(r'ext(\d+)', pointer)
-        if ext_flag:
-            #get keywords from this extension header if specified by extN
-            ext_num = int(ext_flag.group(1))
+        if pointer[PointerFlag.FILEINFO]:
+            #with fileinfo flag, extract FITS header metadata retrieved by astropy.io.fits rather than keyword values from the header
+            val_func = lambda x: fits_obj[ext_num][PointerFlag.FILEINFO][x]
         else:
-            #otherwise get them from the primary header
-            ext_num = 0
-
-        if fileinfo_flag:
-            val_func = lambda x: hdul[ext_num].fileinfo()[x]
-        else:
-            hdr = hdul[ext_num].header
-            if unit_flag:
+            hdr = fits_obj[ext_num][FITS.HEADER]
+            if pointer[PointerFlag.UNIT]:
                 #units are found in brackets in a keyword's comment field
-                val_container = lambda x: re.search(r'\[(.+)\]', hdr.comments[x]).group(1)
+                val_container = lambda x: re.search(UNIT_PATTERN, hdr.comments[x]).group(1)
             else:
-                #otherwise just get th keyword value
+                #otherwise just get the keyword value
                 val_container = lambda x: hdr[x]
 
-            if iterate_flag:
+            if pointer[PointerFlag.ITERATE]:
                 #with the iterate flag, the value returned is a dictionary of keyword indices and their respective values rather than a flat value
-                val_func = lambda x: {kw_idx: val_container(keyword+kw_idx) for kw_idx in _get_iterative(x, hdr)}
+                val_func = lambda x: {kw_idx: val_container(keyword+kw_idx) for kw_idx in iter_list[ext_num][x]}
             else:
                 val_func = val_container
 
         #because of the nested nature of keywords with pointer flags, we put the keyword and its value into an empty dictionary with the right structure first and then merge it with val_list
         dict_to_merge = add_to_val(keyword=keyword, val_func=val_func)
-        for branch in reversed(kw_parts):
+        for branch in pointer[FITS.TREE]:
             dict_to_merge = {branch: dict_to_merge}
         val_list = _deep_merge(val_list, dict_to_merge)
 
@@ -70,18 +75,13 @@ def _deep_merge(into_dict: dict, dict_to_merge: dict) -> dict:
 
     return into_dict
 
-def _get_iterative(keyword: str, hdr: dict) -> list[str]:
+def _get_iteratives(hdr: dict) -> defaultdict:
     """ Helper function for generating a list of iterative FITS keywords. Chunks FITS header keywords into a base and numerical index and returns a list of indexes with bases that match the keyword argument """
-    iter_list = []
+    iter_list = defaultdict(list)
     for kw in hdr:
-        kw_chunk = re.search(r'([A-Z\-\_]+)(\d*)', kw)
-        try:
-            kw_base = kw_chunk.group(1)
-            kw_idx = kw_chunk.group(2)
-        except:
-            continue
-
-        if kw_base == keyword:
-            iter_list.append(kw_idx)
+        match = CHUNK_PATTERN.match(kw)
+        if match:
+            base, idx = match.groups()
+            iter_list[base].append(idx)
 
     return iter_list

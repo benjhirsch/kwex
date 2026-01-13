@@ -26,4 +26,8 @@ class RunState:
     velocity_process: bool = False
     temp_kernel: bool = False
 
+    fits_hdr_list: set = field(default_factory=set)
+    fits_iter_list: set = field(default_factory=set)
+    fits_fileinfo_check: bool = False
+
 run_state = RunState()

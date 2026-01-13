@@ -15,13 +15,13 @@ def compile_check(java_class: str, java_source: str) -> tuple[bool, int]:
         class_java_version = _class_version(java_class)
         incompatible_java = class_java_version > system_java_version
         if incompatible_java:
-            info_logger(f'System Java version ({system_java_version}) is not compatible with version against which Java class was compiled ({class_java_version})')
+            info_logger('System Java version (%s) is not compatible with version against which Java class was compiled (%s)', system_java_version, class_java_version)
         
         newer_source = _newer(java_source, java_class)
         if newer_source:
-            info_logger(f'{java_source.name} is newer than {java_class.name}')
+            info_logger('%s is newer than %s', java_source.name, java_class.name)
     else:
-        info_logger(f'{java_class.name} does not exist')
+        info_logger('%s does not exist', java_class.name)
 
     return (not class_exists or incompatible_java or newer_source), system_java_version
 

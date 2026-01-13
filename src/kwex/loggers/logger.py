@@ -84,5 +84,5 @@ def get_logger() -> logging.getLogger:
     """ Gettr function for accessing the configured logging object """
     return logging.getLogger('kwex')
 
-def info_logger(message: str):
-    get_logger().info(message)
+def info_logger(message: str, *madlibs: str):
+    get_logger().info(message % madlibs)

@@ -43,7 +43,7 @@ class SpiceWrapper:
         try:
             return self._fits_kws[run_state.fits_spice_kws[keyword]]
         except:
-            warning_handler(f'{keyword} not found')
+            warning_handler('%s not found', keyword)
 
     def _get_spice_id(self, target: str, backup_target=None) -> tuple[str, str]:
         """ SpiceWrapper method that retrieves target spice ID from target spice name. """
@@ -68,7 +68,7 @@ class SpiceWrapper:
             try:
                 self._boresight_basis_vector = np.array(run_state.instr_frame_params[self._instr_frame][SpiceKey.BORESIGHT_BASIS_VECTOR])
             except:
-                warning_handler(f'Invalid instrument frame {self._instr_frame}')
+                warning_handler('Invalid instrument frame %s', self._instr_frame)
                 self._boresight_basis_vector = np.array([0, 0, -1])
         return self._boresight_basis_vector
     
@@ -79,7 +79,7 @@ class SpiceWrapper:
             try:
                 self._instr_uv_plane = run_state.instr_frame_params[self._instr_frame][SpiceKey.INSTR_UV_PLANE]
             except:
-                warning_handler(f'Invalid instrument frame {self._instr_frame}')
+                warning_handler('Invalid instrument frame %s', self._instr_frame)
                 self._instr_uv_plane = ['+u', '+v', '']
         return self._instr_uv_plane
 
@@ -164,7 +164,7 @@ class SpiceWrapper:
         try:
             return (self.clock_angle(self.north_img_coord) + axis_rot_dict[axis.lower()]) % 360
         except:
-            warning_handler(f'Invalid position angle axis {axis}')
+            warning_handler('Invalid position angle axis %s', axis)
     
     def state_vector_component(self, from_body: str, to_body: str, vector: str, component: str) -> float:
         """ SpiceWrapper method that returns value stored in _state_dict or calculates vector from 'from_body' to 'to_body' in selected inertial reference frame. 'vector' takes 'position' or 'velocity'. 'component' takes 'x', 'y', or 'z'. """ 
@@ -204,7 +204,7 @@ class SpiceWrapper:
             elif sc_or_solar.lower() == 'solar':
                 sub = spice.subslr('NEAR POINT/ELLIPSOID', self.spice_target_name, self._et, run_state.body_frames[self.spice_target_name], run_state.abcorr, self.spacecraft)
         except spice.SpiceNOFRAME:
-            warning_handler(f'No valid body-fixed frame found for {self.spice_target_name}')
+            warning_handler('No valid body-fixed frame found for %s, self.spice_target_name')
             return
 
         sub_lat = spice.reclat(sub[0])
@@ -220,7 +220,7 @@ class SpiceWrapper:
         try:
             coord_idx = coord_dict[ra_or_dec.lower()]
         except KeyError:
-            warning_handler(f'Invalid coordinate name {ra_or_dec}')
+            warning_handler('Invalid coordinate name %s', ra_or_dec)
             return
         
         radec = spice.recrad(spice.mxv(self.i2j_mat, self.boresight_basis_vector))[coord_idx]
@@ -258,7 +258,7 @@ def get_spice_values(var_list: dict, fits_kws: dict, spice_eqs: dict) -> Path:
     try:
         ksp = SpiceWrapper(fits_kws)
     except:
-        warning_handler(f'Unable to find FITS keywords necessary for SPICE calculations')
+        warning_handler('Unable to find FITS keywords necessary for SPICE calculations')
         return
 
     evaluator = init_eval(ksp)

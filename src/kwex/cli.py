@@ -37,14 +37,14 @@ def config_checker(config_arg: str) -> tuple[str, str]:
     try:
         key, value = config_arg.split('=')
     except:
-        error_handler(lambda: False, f'{config_arg} is not a valid argument')
+        error_handler(lambda: False, '%s is not a valid argument', config_arg)
 
     if Path(value).is_dir():
         value = Path(value).expanduser().resolve().as_posix()
     
-    error_handler(lambda: key in config.DEFAULTS, f'{key} is not a valid config setting')
-    error_handler(lambda: key not in CONFIG_STATES or value in CONFIG_STATES[key], f'{value} is not a valid value for {key}')
-    error_handler(lambda: key not in CONFIG_BOOLEAN or value in CONFIG_ENABLED_DICT, f'{value} is not a valid value for {key}')
+    error_handler(lambda: key in config.DEFAULTS, '%s is not a valid config setting', key)
+    error_handler(lambda: key not in CONFIG_STATES or value in CONFIG_STATES[key], '%s is not a valid value for %s', value, key)
+    error_handler(lambda: key not in CONFIG_BOOLEAN or value in CONFIG_ENABLED_DICT, '%s is not a valid value for %s', value, key)
     
     return key, value
 

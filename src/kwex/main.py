@@ -13,13 +13,13 @@ def kwex_script(args):
     compile_velocity()
 
     product_list = get_files(args.input, args.input_root)
-    var_list = get_vars(args.template)
+    pointer_list = get_pointers(args.template)
     write_nows_template(run_state.nows_template_str)
-    init_spice(var_list)
+    init_spice(pointer_list)
     
     for product in product_list.values():
         output_path = get_output(args.output, product)
-        val_list = get_values(product, var_list)
+        val_list = get_values(product, pointer_list)
         run_velocity(val_list, output_path)
 
         if get_config(ConfigKey.DATA_OUTPUT) == ConfigState.MOVE:

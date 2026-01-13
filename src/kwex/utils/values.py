@@ -2,12 +2,17 @@ import json
 import simpleeval
 import spiceypy as spice
 import numpy as np
+import re
 
 from ..loggers import *
 from ..constants import *
-from ..config import get_config
 from ..state import run_state
-from ..names import ConfigKey
+
+RESERVED_PATTERNS = []
+for c in RESERVED_XML_CHARS:
+    pattern = re.compile(r'\%s(?!.*;)' % c) #reserved character not followed by 0+ other characters and then a semi-colon
+    escape_char = RESERVED_XML_CHARS[c]
+    RESERVED_PATTERNS.append(tuple([pattern, escape_char]))
 
 def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE NOT FOUND') -> dict:
     val_entry = {}
@@ -19,9 +24,8 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
         val = val_func(func_var)
     except Exception as e:
         val = except_val
-        if get_config(ConfigKey.OUTPUT_CHECK):
-            run_state.bad_output = True
-        warning_handler(f'keyword {keyword} value not found because {e}')
+        run_state.bad_output = True
+        warning_handler('keyword %s value not found because %s', keyword, e)
 
     val_entry[keyword] = val
 
@@ -30,10 +34,18 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
 def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
     json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
-    info_logger(f'Recording keyword values in {json_vals.name}')
-    json_vals.write_text(json.dumps(val_list, indent=4))
+    info_logger('Recording keyword values in %s', json_vals.name)
+    val_list_str = fix_json(val_list)
+    json_vals.write_text(val_list_str)
 
     return json_vals
+
+def fix_json(val_list: dict):
+    val_list_str = json.dumps(val_list, indent=4)
+    #reserved XML character replacement
+    for pattern, escape_char in RESERVED_PATTERNS:
+        val_list_str = re.sub(pattern, escape_char, val_list_str)
+    return val_list_str
 
 def init_eval(ksp) -> simpleeval.SimpleEval:
     """ Funtion to initialize the simpleeval evaluator with values from a product's SpiceWrapper object. """

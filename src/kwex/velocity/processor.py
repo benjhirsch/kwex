@@ -22,7 +22,7 @@ def run_velocity(val_list: dict, output_path: Path) -> subprocess.Popen:
         output_file_name = output_path.as_posix()
 
         wait_process(run_state.java_compile_process)
-        info_logger(f'Activating Velocity engine and writing PDS4 label {output_path.name}')
+        info_logger('Activating Velocity engine and writing PDS4 label %s', output_path.name)
 
         velocity_process = java_process('java', JAVA_CLASS.stem, USER_DIR, json_file_name, template_file_path, template_file_name, output_file_name)
         run_state.velocity_process = velocity_process
@@ -33,7 +33,7 @@ def compile_velocity():
 
     if yes:
         #if the java velocity class doesn't exist, was compiled with an incompatible version of java, or is older than its .java source file, recompile
-        info_logger(f'Compiling Java class from source {JAVA_SOURCE.name}')
+        info_logger('Compiling Java class from source %s', JAVA_SOURCE.name)
         USER_DIR.mkdir(parents=True, exist_ok=True)
         proc = java_process('javac', JAVA_SOURCE, JAVA_DIR, '-d', USER_DIR, version=str(system_java_version))
         run_state.java_compile_process = proc

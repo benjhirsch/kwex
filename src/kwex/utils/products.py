@@ -57,22 +57,22 @@ def get_products(source_set: set) -> OrderedDict:
                 pair_source = type_switch[type_switch.index(sid)^1]
                 pair_found = product.find_pair(pair_source)
                 if not pair_found:
-                    info_logger(f'Unpaired product {source.name} found')
+                    info_logger('Unpaired product %s found', source.name)
                     if not get_config(ConfigKey.ALLOW_UNPAIRED):
-                        warning_handler(f'Removing {source.name} from product list')
+                        warning_handler('Removing %s from product list', source.name)
 
             if not get_config(ConfigKey.FIND_PAIR) or pair_found or get_config(ConfigKey.ALLOW_UNPAIRED):
                 product_list[product.root] = product
 
     for root, product in product_list.copy().items():
         if None in product.files.values():
-            info_logger(f'Unpaired product {Path(root).name} found')
+            info_logger('Unpaired product %s found', Path(root).name)
             if not get_config(ConfigKey.ALLOW_UNPAIRED):
-                warning_handler(f'Removing {Path(root).name} from product list')
+                warning_handler('Removing %s from product list', Path(root).name)
                 q = product_list.pop(root)
 
     error_handler(lambda: len(product_list) > 0, 'No source products found')
-    info_logger(f'{len(product_list)} products identified')
+    info_logger('%s products identified', len(product_list))
 
     return product_list
 
@@ -87,12 +87,12 @@ def get_output(output: str, product: Product) -> Path:
             #for --output argument of path/to/file.ext, just return that (very bad option if you have multiple input files)
             output_return = output_path
         else:
-            error_handler(lambda: output_path.is_dir(), f'{output_path.as_posix()} is not a valid directory')
+            error_handler(lambda: output_path.is_dir(), '%s is not a valid directory', output_path.as_posix())
             #for path/to/directory argument, preserve directory structure after input root
             input_root = run_state.input_root
             if input_root:
                 input_root = Path(input_root).expanduser().resolve()
-                error_handler(lambda: input_root.is_dir(), f'{input_root.as_posix()} is not a valid directory')
+                error_handler(lambda: input_root.is_dir(), '%s is not a valid directory', input_root.as_posix())
 
                 input_rel = root_path.relative_to(input_root)
                 output_plus_input = (output_path / input_rel).with_suffix(ext)
@@ -113,7 +113,7 @@ def get_output(output: str, product: Product) -> Path:
         if data_product:
             data_output = output_return.with_suffix(data_product.suffix)
             verb = {ConfigState.COPY: 'Copy', ConfigState.MOVE: 'Mov'}[get_config(ConfigKey.DATA_OUTPUT)]
-            info_logger.info(f'{verb}ing {data_product.name} to {data_output.parent.as_posix()}')
+            info_logger.info('%sing %s to %s', verb, data_product.name, data_output.parent.as_posix())
             shutil.copy2(data_product.as_posix(), data_output.as_posix())
                 
     return output_return
