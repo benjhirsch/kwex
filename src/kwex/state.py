@@ -30,4 +30,6 @@ class RunState:
     fits_iter_list: set = field(default_factory=set)
     fits_fileinfo_check: bool = False
 
+    local_template_vars: set = field(default_factory=set)
+
 run_state = RunState()

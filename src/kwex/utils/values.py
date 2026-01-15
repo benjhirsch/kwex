@@ -25,7 +25,7 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
     except Exception as e:
         val = except_val
         run_state.bad_output = True
-        warning_handler('keyword %s value not found because %s', keyword, e)
+        warning_handler('keyword %s value not found because %s: %s', keyword, type(e).__name__, e)
 
     val_entry[keyword] = val
 

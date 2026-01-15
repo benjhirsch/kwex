@@ -22,7 +22,7 @@ def get_values(product: dict, pointer_list: dict) -> dict:
             from .spice import get_spice_values
             val_list.update(get_spice_values(pointer_list, fits_obj[0][FITS.HEADER], run_state.spice_eqns))
 
-    if get_config(ConfigKey.OUTPUT_CHECK) and run_state.bad_output:
+    if get_config(ConfigKey.OUTPUT_CHECK) and not get_config(ConfigKey.VELOCITY) and run_state.bad_output:
         run_state.bad_output_list.add(run_state.output_list[-1])
 
     return val_list

@@ -7,6 +7,7 @@ from ..loggers import *
 from ..state import run_state
 from ..names import Source, PointerFlag, FITS, PDS3
 from ..constants import *
+from ..config import get_config
 
 #regex patterns for template strings
 #$label.<1+ alpanumeric characters + period seperators for nested objects> optionally enclosed in curly brackets
@@ -19,6 +20,8 @@ SPICE_TEMPLATE_PATTERN = re.compile(r'\$(?:\{)?spice\.([\w\(]+)(?:\})?')
 EXT_PATTERN = re.compile(r'ext(\d+)')
 #.<1+alphanumeric characters>( to capture the beginning of a method call and not another part of the pointer object
 CALL_PATTERN = re.compile('\.\w+\(')
+#set ( $<1+alpnumeric characters> = with optional whitespace
+LOCAL_VAR_PATTERN = re.compile(r'#set\s*\(\s*(\$\w+)\s*=')
 
 #PDS3 keyword variable substitution file
 VAR_SUB_LIST = json.loads(VAR_SUB_JSON.read_text())
@@ -42,6 +45,10 @@ def get_pointers(template: str) -> dict:
             if '$' in line:
                 #we only need to get template lines that include variable pointers
                 vm_str.append(line)
+                if get_config(ConfigKey.OUTPUT_CHECK):
+                    pound_set = re.search(LOCAL_VAR_PATTERN, line)
+                    if pound_set:
+                        run_state.local_template_vars.add(pound_set.group(1))
 
             vm_nows, current_line, in_velocity = _build_nows_template(line, vm_nows, current_line, in_velocity)
 

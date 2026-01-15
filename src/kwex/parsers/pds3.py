@@ -116,7 +116,7 @@ def get_lbl(label: Path, pointer_list=[]) -> dict:
     
 def get_lbl_values(pointer_list: dict, lbl_kws: dict) -> dict:
     """ Function that finds values of PDS3 label keywords corresponding to Velocity template variables. Performs substitution to convert variables back into PDS3 format in cases where the PDS3 keyword string would not be a valid Java/Velocity variable. """
-    #info_logger('Extracting values of $label.KEYWORD template pointers from PDS3 label')
+    info_logger('Extracting values of $label.KEYWORD template pointers from PDS3 label')
     val_list = {Source.PDS3: {}}
 
     for pointer in pointer_list[PDS3.FLAT].keys():

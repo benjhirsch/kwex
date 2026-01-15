@@ -28,7 +28,7 @@ def get_fits(fits_product: Path) -> dict:
     
 def get_fits_values(var_list: dict, fits_obj: dict) -> dict:
     """ Function that finds values of FITS header keywords corresponding to Velocity template variables. Handles multiple extensions. Iterates through keywords with index values. """
-    #info_logger('Extracting values of $fits.KEYWORD template pointers from FITS file')
+    info_logger('Extracting values of $fits.KEYWORD template pointers from FITS file')
     val_list = {}
     iter_list = {}
 

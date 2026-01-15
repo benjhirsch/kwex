@@ -62,18 +62,3 @@ CONFIG_STATES = {
         ConfigState.MOVE
     ]
 }
-
-BAD_OUTPUT_CHECK = [
-    '$label',
-    '$fits',
-    '$spice',
-    '${label',
-    '${fits',
-    '${spice',
-    '#if',
-    '#for',
-    '#set',
-    '#parse',
-    'KEYWORD VALUE NOT FOUND',
-    'KEYWORD NOT RECALCULATED'
-]
