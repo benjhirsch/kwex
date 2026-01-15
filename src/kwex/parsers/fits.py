@@ -19,7 +19,7 @@ def get_fits(fits_product: Path) -> dict:
     try:
         with fits.open(fits_product) as f:
             for ext in run_state.fits_hdr_list:
-                fits_obj[ext]['header'] = f[ext].header
+                fits_obj[ext][FITS.HEADER] = f[ext].header
                 if run_state.fits_fileinfo_check:
                     fits_obj[ext][PointerFlag.FILEINFO] = f[ext].fileinfo()
             return fits_obj
