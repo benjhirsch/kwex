@@ -24,6 +24,11 @@ HEADER BYTES (nested object keyword): $label.HEADER.BYTES
 
 IMAGE DESCRIPTION (multi-line values): $label.IMAGE.DESCRIPTION
 
+col name test
+#foreach ($c in $label.EXTENSION_IQVALS_TABLE.COLUMN)
+EXTENSION_IQVALS_TABLE COL NAME $c.BYTES
+#end
+
 
 FITS header testing
 ===================

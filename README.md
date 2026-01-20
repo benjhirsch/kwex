@@ -144,13 +144,13 @@ These maps and arrays can be included anywhere in your template (before the vari
 Again, be sure to include the parse statement before the variables it defines are required.
 
 ## Credit
-The SPICE routines in this tool were adapted from code written by Benjamin Sharkey, Senior Faculty Specialist at UMD, with contributions from Adeline Gicquel-Brodtke, Senior Faculty Specialist at UMD.
+The SPICE routines in this tool were adapted from code written by [Benjamin Sharkey](https://github.com/bensharkey), Senior Faculty Specialist at UMD, with contributions from [Adeline Gicquel-Brodtke](https://github.com/agicquelb), Senior Faculty Specialist at UMD.
 
 ## Contact Info
-For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at bhirsch1@umd.edu.
+For any questions or issues, contact [Ben Hirsch](https://github.com/benjhirsch) of the PDS Small Bodies Node at bhirsch1@umd.edu.
 
 ## Installation
 
-Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
+Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
 
 kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/kwex/resources/java) directory, but you will need some Java Runtime Environment installed.

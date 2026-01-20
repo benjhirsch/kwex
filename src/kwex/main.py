@@ -16,20 +16,18 @@ def kwex_script(args):
     pointer_list = get_pointers(args.template)
     write_nows_template(run_state.nows_template_str)
     init_spice(pointer_list)
+    init_velocity(run_state.nows_template_filename)
     
     for product in product_list.values():
         output_path = get_output(args.output, product)
         val_list = get_values(product, pointer_list)
-        run_velocity(val_list, output_path)
+        send_values(val_list, output_path)
 
         if get_config(ConfigKey.DATA_OUTPUT) == ConfigState.MOVE:
             product.data_product.unlink()
 
-    wait_process(run_state.velocity_process)
+    terminate_velocity()
     log_bad_output()
     run_state.nows_template_filename.unlink()
     if run_state.temp_kernel:
         run_state.kernel_path.unlink()
-    if not get_config(ConfigKey.KEEP_JSON):
-        for jv in run_state.json_list:
-            jv.unlink()

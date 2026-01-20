@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 from ..constants import *
 from ..names import Source, PointerFlag, PDS3
@@ -61,7 +62,7 @@ def _read_line_check(k: str, v: str, lvl: str, pl: dict) -> bool:
         #parse lines to get out of objects we ended up in
         return True
 
-def get_lbl(label: Path, pointer_list=[]) -> dict:
+def get_lbl(label: Path, pointer_list=defaultdict(dict)) -> dict:
     """ PDS3 label parser. Reads file and returns dictionary of keyword:value pairs. Handles objects of arbitrary depth and multi-line value strings. Preserves format of text fields with whitespace. """
     info_logger('Reading PDS3 label %s', label.name)
 

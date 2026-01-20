@@ -6,7 +6,7 @@ import os
 from ..loggers import *
 from ..constants import *
 
-def compile_check(java_class: str, java_source: str) -> tuple[bool, int]:
+def compile_check(java_class: Path, java_source: Path) -> tuple[bool, int]:
     """ Function to check whether the Java Velocity class needs to be compiled. Does so if it doesn't exist, is incompatible with the system's Java runtime environment, or is older than its .java source file. """
     class_exists = java_class.is_file()
     system_java_version = _system_version()
@@ -45,7 +45,7 @@ def wait_process(process: subprocess.Popen):
     while process and process.poll() is None:
         pass
 
-def java_process(command: str, file: str, cwd: str, *args, version=None) -> subprocess.Popen:
+def java_process(command: str, file: str, cwd: str, *args, version=None, **kwargs) -> subprocess.Popen:
     """ Wrapper function to run Java comands. """
     jargs = [command]
     if version is not None:
@@ -54,5 +54,5 @@ def java_process(command: str, file: str, cwd: str, *args, version=None) -> subp
     jar_files = os.pathsep.join([(JAVA_DIR / j).as_posix() for j in [cwd]+JAR_FILES])
     jargs += ['-cp', jar_files, file, *args]
 
-    proc = subprocess.Popen(jargs, cwd=cwd)
+    proc = subprocess.Popen(jargs, cwd=cwd, **kwargs)
     return proc

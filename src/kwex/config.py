@@ -75,7 +75,10 @@ def get_config(key: str) -> str:
 def path(key: str) -> Path:
     """ Helper function that converts path-like config values into pathlib Paths """
     if get_config(key) == DEFAULTS[key]:
-        return RESOURCE_PATH.joinpath(get_config(key))
+        if key == ConfigKey.LOG_OUTPUT:
+            return Path.cwd() / DEFAULTS[key]
+        else:
+            return RESOURCE_PATH.joinpath(get_config(key))
     else:
         return Path(get_config(key))
     

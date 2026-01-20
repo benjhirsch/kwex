@@ -25,8 +25,8 @@ def cli_override(override: list, log: str) -> dict:
         if log == ConfigState.CONSOLE:
             override_dict[ConfigKey.LOG_OUTPUT] = ConfigState.CONSOLE
         elif not log == ConfigState.BLANK:
-            if Path(value).is_dir():
-                value = Path(value).expanduser().resolve().as_posix()
+            if Path(log).is_dir():
+                log = Path(log).expanduser().resolve().as_posix()
             override_dict[ConfigKey.LOG_OUTPUT] = log
 
     return override_dict

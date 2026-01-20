@@ -14,29 +14,33 @@
             "0.7255320767"
         ],
         "HEADER": {
-            "BYTES": "34560",
-            "HEADER_TYPE": "\"FITS\"",
-            "INTERCHANGE_FORMAT": "\"BINARY\"",
-            "RECORDS": "12",
-            "DESCRIPTION": "\"\n    FITS format defined in NASA/Science\n    Office Standards Technology 100-1.0\n\nBy mutual agreement with PDS-SBN, FITS headers are the domain of the NH\nProject and were not part of the peer review beyond adherence to the\nFITS standard.  FITS header values, especially geometric conventions\nregarding phase angle, direction of supplied vectors and sense of light\ntime and stellar aberration corrections, were chosen to serve\noperational purposes and should be used with care.\n  \""
+            "BYTES": "34560"
         },
         "IMAGE": {
-            "DESCRIPTION": "\"\n    FITS PDU\n      PDU\n\n    Calibrated data image\n    - Corrections applied:\n      - Bias subtraction\n      - Smear removal (if non-zero exposure)\n      - Flatfield correction (if non-zero exposure)\n      - Absolute calibration\n        - N.B. NO pixel values are CHANGED\n        - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)\n        - ABSCCORR only adds conversion factors for\n          - radiance and irradiance e.g. RPLUTO; PPHOLUS\n    - Corrections omitted:\n      - Image subtraction\n      - Signal linearization\n      - CTI correction\n      - Smear removal (if zero exposure)\n      - Dark subtraction\n      - Flatfield correction (if zero exposure)\n      - Geometric correction\n      - Geometric correction\n    See the data set documentation, specifically the\n    SOC Instrument Interface Control Document (ICD),\n    for more details.\n  \"",
-            "UNIT": "\"DATA NUMBER\"",
-            "SAMPLE_BITS": "32",
-            "SAMPLE_TYPE": "\"IEEE_REAL\"",
-            "AXIS_ORDER_TYPE": "\"FIRST_INDEX_FASTEST\"",
-            "LINE_DISPLAY_DIRECTION": "\"UP\"",
-            "SAMPLE_DISPLAY_DIRECTION": "\"RIGHT\"",
-            "LINE_SAMPLES": "256",
-            "LINES": "256"
+            "DESCRIPTION": "\"\n    FITS PDU\n      PDU\n\n    Calibrated data image\n    - Corrections applied:\n      - Bias subtraction\n      - Smear removal (if non-zero exposure)\n      - Flatfield correction (if non-zero exposure)\n      - Absolute calibration\n        - N.B. NO pixel values are CHANGED\n        - So pixel values are *CALIBRATED* DATA NUMBERs (DNs)\n        - ABSCCORR only adds conversion factors for\n          - radiance and irradiance e.g. RPLUTO; PPHOLUS\n    - Corrections omitted:\n      - Image subtraction\n      - Signal linearization\n      - CTI correction\n      - Smear removal (if zero exposure)\n      - Dark subtraction\n      - Flatfield correction (if zero exposure)\n      - Geometric correction\n      - Geometric correction\n    See the data set documentation, specifically the\n    SOC Instrument Interface Control Document (ICD),\n    for more details.\n  \""
+        },
+        "EXTENSION_IQVALS_TABLE": {
+            "COLUMN": [
+                {
+                    "NAME": "\"I Value\"",
+                    "BYTES": "2",
+                    "COLUMN_NUMBER": "1",
+                    "DATA_TYPE": "\"MSB_INTEGER\"",
+                    "START_BYTE": "1",
+                    "DESCRIPTION": "\"\n            In-phase value\n    \""
+                },
+                {
+                    "NAME": "\"Q Value\"",
+                    "BYTES": "2",
+                    "COLUMN_NUMBER": "2",
+                    "DATA_TYPE": "\"MSB_INTEGER\"",
+                    "START_BYTE": "3",
+                    "DESCRIPTION": "\"\n            Quadrature-phase value\n    \""
+                }
+            ]
         },
         "EXTENSION_CALIB_ERROR_EST_HEADER": {
-            "BYTES": "2880",
-            "HEADER_TYPE": "\"FITS\"",
-            "INTERCHANGE_FORMAT": "\"BINARY\"",
-            "RECORDS": "1",
-            "DESCRIPTION": "\"\n    This is the FITS header for\n      FITS EDU number:  1\n      FITS EDU name:\n        LORRI Error image\n  \""
+            "BYTES": "2880"
         }
     },
     "fits": {

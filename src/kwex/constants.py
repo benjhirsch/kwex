@@ -10,10 +10,10 @@ CONFIG_PATH = USER_DIR / 'config.json'
 RESOURCE_PATH = files('kwex.resources')
 VAR_SUB_JSON = RESOURCE_PATH.joinpath('pds3/var_sub.json')
 MAJOR_TO_VERSION = RESOURCE_PATH.joinpath('java/major_to_version.json')
-JAVA_SOURCE = RESOURCE_PATH.joinpath('java/VMtoXML.java')
+JAVA_SOURCE = RESOURCE_PATH.joinpath('java/VelocityWorker.java')
 
 JAVA_DIR = KWEX_DIR / 'resources/java'
-JAVA_CLASS = USER_DIR / 'VMtoXML.class'
+JAVA_CLASS = USER_DIR / 'VelocityWorker.class'
 JAR_FILES = ['velocity-1.7.jar',
              'velocity-tools-2.0.jar',
              'jackson-core-2.9.9.jar',

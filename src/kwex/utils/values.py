@@ -7,6 +7,8 @@ import re
 from ..loggers import *
 from ..constants import *
 from ..state import run_state
+from ..config import get_config
+from ..names import ConfigKey
 
 RESERVED_PATTERNS = []
 for c in RESERVED_XML_CHARS:
@@ -33,19 +35,29 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
 
 def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that writes temporary *.json file to feed into Velocity engine """
-    json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
-    info_logger('Recording keyword values in %s', json_vals.name)
-    val_list_str = fix_json(val_list)
-    json_vals.write_text(val_list_str)
+    if get_config(ConfigKey.KEEP_JSON):
+        json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
+        info_logger('Recording keyword values in %s', json_vals.name)
+        val_list_str = fix_json(val_list, indent=4)
+        json_vals.write_text(val_list_str)
 
-    return json_vals
+    if get_config(ConfigKey.VELOCITY):
+        info_logger('Sending %s keyword values to Velocity', output_path.name)
+        val_list['output_file_name'] = output_path.as_posix()
+        val_list_str = fix_json(val_list)
+        run_state.velocity_process.stdin.write(val_list_str)
+        run_state.velocity_process.stdin.flush()
 
-def fix_json(val_list: dict):
-    val_list_str = json.dumps(val_list, indent=4)
+        resp = run_state.velocity_process.stdout.readline()
+        if resp != 'ok\n':
+            warning_handler('Velocity error: %s', resp)
+
+def fix_json(val_list: dict, indent=None):
+    val_list_str = json.dumps(val_list, indent=indent)
     #reserved XML character replacement
     for pattern, escape_char in RESERVED_PATTERNS:
         val_list_str = re.sub(pattern, escape_char, val_list_str)
-    return val_list_str
+    return val_list_str+'\n'
 
 def init_eval(ksp) -> simpleeval.SimpleEval:
     """ Funtion to initialize the simpleeval evaluator with values from a product's SpiceWrapper object. """

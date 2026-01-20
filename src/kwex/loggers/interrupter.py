@@ -52,6 +52,8 @@ def warning_handler(message: str, *madlibs: str):
 def log_bad_output():
     """ Logging utility that lists output files with bad output (unparsed Velocity code, keywords with missing values) """
     if get_config(ConfigKey.OUTPUT_CHECK):
+        any_bad = False
+        
         logger.info_logger('Checking output for errors')
         BAD_OUT['Unresolved local variables'] = run_state.local_template_vars
         
@@ -60,6 +62,7 @@ def log_bad_output():
             
             if file in run_state.bad_output_list:
                 logger.info_logger('Unrecorded keyword values: %s', file.as_posix())
+                any_bad = True
             
             if ConfigKey.VELOCITY:
                 with file.open() as f:
@@ -68,3 +71,7 @@ def log_bad_output():
                             if not bad_found[bad] and any(bad in line for bad in BAD_OUT[bad]):
                                 logger.info_logger('%s: %s', bad, file.as_posix())
                                 bad_found[bad] = True
+                                any_bad = True
+
+        if not any_bad:
+            logger.info_logger('No errors found')
