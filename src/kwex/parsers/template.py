@@ -81,7 +81,7 @@ def _parse_fits_pointer(pointer_str: str) -> dict:
     pointer_parts = pointer_str.split('.')
     #for fits pointers, the last segment is always the keyword
     pointer[FITS.KEYWORD] = pointer_parts.pop()
-    pointer[FITS.TREE] = reversed(pointer_parts)
+    pointer[FITS.TREE] = [branch for branch in reversed(pointer_parts)]
     
     for flag in PointerFlag:
         pointer[flag] = flag in pointer_parts

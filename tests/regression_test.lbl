@@ -547,4 +547,38 @@ OBJECT                          = EXTENSION_CALIB_QUALITY_IMAGE
   LINES                           = 256                                       
   OFFSET                          = 32768.0000000                             
 END_OBJECT                      = EXTENSION_CALIB_QUALITY_IMAGE               
+
+OBJECT                          = EXTENSION_IQVALS_TABLE                      
+  INTERCHANGE_FORMAT              = "BINARY"                                  
+  ROW_BYTES                       = 4                                         
+  ROWS                            = 1250                                      
+  COLUMNS                         = 2                                         
+  DESCRIPTION                     = "                                         
+    FITS EDU number:  1                                                       
+    FITS EDU name:                                                            
+      I AND Q VALUES                                                          
+                                                                              
+  "                                                                           
+                                                                              
+  OBJECT        = COLUMN                                                      
+    NAME          = "I Value"                                                 
+    BYTES         = 2                                                         
+    COLUMN_NUMBER = 1                                                         
+    DATA_TYPE     = "MSB_INTEGER"                                             
+    START_BYTE    = 1                                                         
+    DESCRIPTION   = "                                                         
+            In-phase value                                                    
+    "                                                                         
+  END_OBJECT    = COLUMN                                                      
+  OBJECT        = COLUMN                                                      
+    NAME          = "Q Value"                                                 
+    BYTES         = 2                                                         
+    COLUMN_NUMBER = 2                                                         
+    DATA_TYPE     = "MSB_INTEGER"                                             
+    START_BYTE    = 3                                                         
+    DESCRIPTION   = "                                                         
+            Quadrature-phase value                                            
+    "                                                                         
+  END_OBJECT    = COLUMN                                                      
+END_OBJECT                      = EXTENSION_IQVALS_TABLE                      
 END                                                                           
