@@ -171,6 +171,5 @@
         "SPCPAXIN": 89.58671319670981,
         "SPCTSCLA": -8.39918302345119,
         "PHASE_ANGLE": 11.261060755072133
-    },
-    "output_file_name": "C:/kwex/tests/output/regression_test.lblx"
+    }
 }

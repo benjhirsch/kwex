@@ -38,8 +38,9 @@ def send_values(val_list: dict, output_path: Path) -> Path:
     """ Helper function that sends dictionary of keyword values to the Velocity engine and optionally records them as a JSON file """
     if get_config(ConfigKey.VELOCITY):
         info_logger('Sending %s keyword values to Velocity', output_path.name)
-        val_list['output_file_name'] = output_path.as_posix()
-        val_list_str = fix_json(val_list)
+        serial_val_list = val_list.copy()
+        serial_val_list = output_path.as_posix()
+        val_list_str = fix_json(serial_val_list)
         run_state.velocity_process.stdin.write(val_list_str)
         run_state.velocity_process.stdin.flush()
 

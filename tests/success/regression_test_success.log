@@ -2,7 +2,6 @@
 2026-01-23 09:20:58.071: 9 FITS keywords found in template
 2026-01-23 09:20:58.071: 8 SPICE keywords found in template
 2026-01-23 09:20:58.071: 1 products identified
-2026-01-23 09:20:58.134: Invalid PATH_VALUES in nh_v07.tm. Writing temporary metakernel with PATH_VALUES 'c:/users/auton/documents/sbn/tools/kwex/spice/data'
 2026-01-23 09:20:59.010: Activating Velocity engine
 2026-01-23 09:20:59.010: Reading PDS3 label regression_test.lbl
 2026-01-23 09:20:59.026: Extracting values of $label.KEYWORD template pointers from PDS3 label
