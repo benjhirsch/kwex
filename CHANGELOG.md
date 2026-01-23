@@ -1,20 +1,28 @@
 # Changelog
 
-## [3.1.0] - 2025-01-07
+## [3.1.0] - 2025-01-23
 
 ### Added
 
 - Parsing of a FITS header's `astropy.io.fits` metadata with `fileinfo` metadata flag
 - Module-level imports via `__init__.py` files
 - Default config options now apply at the module level without invoking the main kwex script and CLI
+- Pre-processing of template pointers to reduce duplicated effort during file parsing
+- Output checking categorized by error: unresolved template pointers, unresolved Velocity logic, unresolved local variables, unrecorded keyword values
+- [regression-test.bat](tests/regression-test.bat) and [regression-test.sh](tests/regression-test.sh) scripts
 
 ### Changed
 
- - Log formatting updated to be cleaner, more consistent
- - PDS3 label parser modified to iterate by line through files for more efficient memory usage
- - `boresight_basis_vector` and `instr_uv_plane` SpiceWrapper variables changed to declared-as-needed class properties
- - SPICE resource [files](src/kwex/resources/spice/) are now fetched only once per script execution when SPICE is initialized
- - Products are now parsed in alphanumeric order
+- Log formatting updated to be cleaner, more consistent
+- PDS3 label parser modified to iterate by line through files for more efficient memory usage
+- `boresight_basis_vector` and `instr_uv_plane` SpiceWrapper variables changed to declared-as-needed class properties
+- SPICE resource [files](src/kwex/resources/spice/) are now fetched only once per script execution when SPICE is initialized
+- Products are now parsed in alphanumeric order
+- Velocity engine changed to a persistent Java process that streams input, improving performance by ~5x
+
+### Fixed
+
+- Fixed CLI logic for --log argument and default log location
 
 ## [3.0.0] - 2025-12-30
 
