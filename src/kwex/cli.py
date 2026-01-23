@@ -5,7 +5,7 @@ from pathlib import Path
 from . import config
 from .names import ConfigKey, ConfigState
 from .constants import *
-from .loggers import *
+from .utils.errors import error_handler
 
 cfg = config.Config()
 

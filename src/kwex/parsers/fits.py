@@ -6,6 +6,7 @@ from collections import defaultdict
 from ..names import Source, PointerFlag, FITS
 from ..loggers import *
 from ..utils.values import add_to_val
+from ..utils.errors import warning_handler
 from ..state import run_state
 
 EXT_PATTERN = re.compile(r'ext(\d+)')

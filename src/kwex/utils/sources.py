@@ -7,8 +7,10 @@ from ..constants import *
 from ..names import ConfigKey
 from ..loggers import *
 from ..state import run_state
+from .errors import warning_handler, error_handler
 
 def source_id(file):
+    """ Utility for checking whether a source product file extension is valid and returning a normalized form. """
     ext = file.suffix
     for s in EXTENSIONS:
         if ext.lower() in EXTENSIONS[s]:
@@ -17,12 +19,14 @@ def source_id(file):
     return False
 
 def source_check(source, sid, check=False):
+    """ Utility for checking whether a source product is a valid file with a valid file extension. """
     file_status = not check or source.is_file()
     if not file_status:
         warning_handler('%s is not a valid file', source.name)
     return sid and file_status
 
 def source_iter(source_list, check=False):
+    """ Utility for iterating through a list of files and constructing a set of valid source files. """
     added_set = set()
     for s in source_list:
         if not isinstance(s, Path):
@@ -33,7 +37,7 @@ def source_iter(source_list, check=False):
     
     return added_set
 
-def get_input(input: list) -> set:
+def get_input(*input) -> set:
     """ Utility that takes --input parameter and constructs two sets of files: one of PDS3, one of FITS 
     
     Supports: individual files, multiple positional files, directories, glob patterns, ~ expansion, and @file.ext w/ list of input files"""
@@ -97,3 +101,12 @@ def check_kernel(kernel: str):
             run_state.kernel_path = temp_kernel
 
     return kernel_path
+
+def cleanup():
+    """ Utility for deleting temporary files at program end. """
+    try:
+        run_state.nows_template_filename.unlink()
+    except:
+        pass
+    if run_state.temp_kernel:
+        run_state.kernel_path.unlink()

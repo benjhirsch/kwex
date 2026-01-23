@@ -58,12 +58,14 @@ class PointerFlag(StrEnum):
     FILEINFO = 'fileinfo'
 
 class FITS(Enum):
+    """ Symbolic names for attributes of parsed FITS keywords. """
     HEADER = auto()
     EXT_NUM = auto()
     KEYWORD = auto()
     TREE = auto()
 
 class PDS3(StrEnum):
+    """ Symbolic names for attributes of parsed PDS3 keywords. """
     VALUE = 'value'
     UNIT = 'unit'
     OBJECT = 'OBJECT'

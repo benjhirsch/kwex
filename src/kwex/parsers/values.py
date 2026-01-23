@@ -3,8 +3,9 @@ from ..config import get_config
 from ..names import ConfigKey, Source, FITS
 from .pds3 import get_lbl, get_lbl_values
 from .fits import get_fits, get_fits_values
+from ..utils.products import Product
 
-def get_values(product: dict, pointer_list: dict) -> dict:
+def get_values(product: Product, pointer_list: dict) -> dict:
     """ Container function for parsing source keyword values corresponding to template variables """
     run_state.bad_output = False
     val_list = {}

@@ -8,6 +8,7 @@ from ..loggers import *
 from ..utils import *
 
 def init_velocity(template_path: Path) -> subprocess.Popen:
+    """ Function that calls the Java wrapper class that activates and manages the Velocity engine """
     if get_config(ConfigKey.VELOCITY):
         template_file_path = template_path.parent.as_posix()
         template_file_name = template_path.name
@@ -19,6 +20,7 @@ def init_velocity(template_path: Path) -> subprocess.Popen:
         run_state.velocity_process = velocity_process
 
 def terminate_velocity():
+    """ Function that issues a command to end the Velocity Java process """
     terminate_command = {'cmd': 'terminate'}
     try:
         run_state.velocity_process.stdin.write(fix_json(terminate_command))
@@ -26,8 +28,9 @@ def terminate_velocity():
     except:
         pass
     finally:
-        run_state.velocity_process.stdin.close()
-        run_state.velocity_process.wait()
+        if run_state.velocity_process:
+            run_state.velocity_process.stdin.close()
+            run_state.velocity_process.wait()
 
 def compile_velocity():
     """ Wrapper function to compile the Java class that runs the Velocity engine from a .java source file. """

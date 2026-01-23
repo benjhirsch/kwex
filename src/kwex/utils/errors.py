@@ -1,10 +1,12 @@
-import sys
-
-from . import logger
+from ..loggers import *
 from ..config import get_config
 from ..constants import *
 from ..names import ConfigKey, ConfigState
 from ..state import run_state
+
+class KwexError(Exception):
+    def __init__(self, message):
+        self.message = message
 
 BAD_OUT = {
     'Unresolved template pointers': [
@@ -31,8 +33,7 @@ def error_handler(test, message: str, *madlibs: str):
     """ Logging utility for handling error messages and ending program. 'test' is a conditional that evaluates to true or false as a lambda function. If false, message is logged and program ends."""
     if not test():
         #if false, end program and say why
-        logger.get_logger().error(message % madlibs)
-        sys.exit()
+        raise KwexError(message % madlibs)
 
 def warning_handler(message: str, *madlibs: str):
     """ Logging utility for handling warning level logs depending on user configuraion.\n
@@ -65,13 +66,16 @@ def log_bad_output():
                 any_bad = True
             
             if ConfigKey.VELOCITY:
-                with file.open() as f:
-                    for line in f:
-                        for bad in BAD_OUT.keys():
-                            if not bad_found[bad] and any(bad in line for bad in BAD_OUT[bad]):
-                                logger.info_logger('%s: %s', bad, file.as_posix())
-                                bad_found[bad] = True
-                                any_bad = True
+                try:
+                    with file.open() as f:
+                        for line in f:
+                            for bad in BAD_OUT.keys():
+                                if not bad_found[bad] and any(bad in line for bad in BAD_OUT[bad]):
+                                    logger.info_logger('%s: %s', bad, file.as_posix())
+                                    bad_found[bad] = True
+                                    any_bad = True
+                except:
+                    warning_handler('Invalid output file %s', file.as_posix())
 
         if not any_bad:
             logger.info_logger('No errors found')

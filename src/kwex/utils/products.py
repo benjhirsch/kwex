@@ -7,8 +7,10 @@ from ..loggers import *
 from ..config import get_config
 from ..state import run_state
 from .sources import get_input, source_id, source_check
+from .errors import error_handler, warning_handler
 
 class Product:
+    """ Object that holds an input pair, i.e. a (FITS) data product and corresponding (PDS3) label """
     def __init__(self, path):
         self.root = path.with_suffix('')
         self.files = {Source.PDS3: None, Source.FITS: None}
@@ -113,7 +115,7 @@ def get_output(output: str, product: Product) -> Path:
         if data_product:
             data_output = output_return.with_suffix(data_product.suffix)
             verb = {ConfigState.COPY: 'Copy', ConfigState.MOVE: 'Mov'}[get_config(ConfigKey.DATA_OUTPUT)]
-            info_logger.info('%sing %s to %s', verb, data_product.name, data_output.parent.as_posix())
+            info_logger('%sing %s to %s', verb, data_product.name, data_output.parent.as_posix())
             shutil.copy2(data_product.as_posix(), data_output.as_posix())
                 
     return output_return
@@ -138,7 +140,7 @@ def _get_input_root(product_list: OrderedDict[Product]) -> Path:
     
 def get_files(input: list, input_root: str):
     """ Container function that gets source files and product list from command-line arguments """
-    source_set = get_input(input)
+    source_set = get_input(*input)
     product_list = get_products(source_set)
     run_state.input_root = input_root or _get_input_root(product_list)
 

@@ -8,6 +8,7 @@ from ..state import run_state
 from ..names import Source, PointerFlag, FITS, PDS3
 from ..constants import *
 from ..config import get_config
+from ..utils import *
 
 #regex patterns for template strings
 #$label.<1+ alpanumeric characters + period seperators for nested objects> optionally enclosed in curly brackets

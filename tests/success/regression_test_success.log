@@ -1,14 +1,15 @@
-2026-01-20 11:31:29.796: 1 products identified
-2026-01-20 11:31:29.796: 14 PDS3 label keywords found in template
-2026-01-20 11:31:29.796: 9 FITS keywords found in template
-2026-01-20 11:31:29.796: 8 SPICE keywords found in template
-2026-01-20 11:31:29.796: Invalid PATH_VALUES in nh_v07.tm. Writing temporary metakernel with PATH_VALUES 'c:/users/auton/documents/sbn/tools/kwex/spice/data'
-2026-01-20 11:31:30.034: Activating Velocity engine
-2026-01-20 11:31:30.034: Reading PDS3 label regression_test.lbl
-2026-01-20 11:31:30.034: Extracting values of $label.KEYWORD template pointers from PDS3 label
-2026-01-20 11:31:30.050: Reading FITS file regression_test.fit
-2026-01-20 11:31:30.050: Computing values of $spice.KEYWORD template pointers
-2026-01-20 11:31:30.050: Recording keyword values in vals_regression_test.json
-2026-01-20 11:31:30.050: Sending regression_test.lblx keyword values to Velocity
-2026-01-20 11:31:30.600: Checking output for errors
-2026-01-20 11:31:30.608: No errors found
+2026-01-23 09:20:58.071: 14 PDS3 label keywords found in template
+2026-01-23 09:20:58.071: 9 FITS keywords found in template
+2026-01-23 09:20:58.071: 8 SPICE keywords found in template
+2026-01-23 09:20:58.071: 1 products identified
+2026-01-23 09:20:58.134: Invalid PATH_VALUES in nh_v07.tm. Writing temporary metakernel with PATH_VALUES 'c:/users/auton/documents/sbn/tools/kwex/spice/data'
+2026-01-23 09:20:59.010: Activating Velocity engine
+2026-01-23 09:20:59.010: Reading PDS3 label regression_test.lbl
+2026-01-23 09:20:59.026: Extracting values of $label.KEYWORD template pointers from PDS3 label
+2026-01-23 09:20:59.026: Reading FITS file regression_test.fit
+2026-01-23 09:20:59.042: Extracting values of $fits.KEYWORD template pointers from FITS file
+2026-01-23 09:20:59.042: Computing values of $spice.KEYWORD template pointers
+2026-01-23 09:20:59.058: Sending regression_test.lblx keyword values to Velocity
+2026-01-23 09:20:59.582: Recording keyword values in vals_regression_test.json
+2026-01-23 09:20:59.582: Checking output for errors
+2026-01-23 09:20:59.582: No errors found
