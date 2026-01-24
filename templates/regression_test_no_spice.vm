@@ -1,4 +1,4 @@
-regression test command (from kwex directory): kwex templates/regression_test.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
+regression test command (from kwex directory): kwex templates/regression_test_no_spice.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
 
 PDS3 label testing
 ==================
