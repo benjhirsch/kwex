@@ -1,0 +1,72 @@
+regression test command (from kwex directory): kwex templates/regression_test.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
+
+PDS3 label testing
+==================
+
+TARGET_NAME (basic pointer): $label.TARGET_NAME
+
+INSTRUMENT_HOST_NAME (formal reference notation): ${label.INSTRUMENT_HOST_NAME}'s instruments
+
+^HEADER (substitution): $label.PTR_HEADER
+
+EXPOSURE_DURATION value (value/unit dictionary): $label.EXPOSURE_DURATION.value
+
+EXPOSURE_DURATION unit: $label.EXPOSURE_DURATION.unit
+
+QUATERNION, first element (arrays) $label.QUATERNION[0]
+
+(looping through indexes)
+#foreach ($q in $label.QUATERNION)
+QUATERNION, all elements (loops): $q
+#end
+
+HEADER BYTES (nested object keyword): $label.HEADER.BYTES
+
+IMAGE DESCRIPTION (multi-line values): $label.IMAGE.DESCRIPTION
+
+col name test
+#foreach ($c in $label.EXTENSION_IQVALS_TABLE.COLUMN)
+EXTENSION_IQVALS_TABLE COL NAME $c.BYTES
+#end
+
+
+FITS header testing
+===================
+
+APID (basic pointer): $fits.APID
+
+#foreach ($x in $fits.iterate.CRPIX)
+CRPIX${foreach.index} (iterative keywords): $x
+#end
+
+SPCK0083 (iterative w/ fits index): $fits.SPCK0083
+SPCK0084 (iterative w/ array indexing): $fits.iterate.SPCK["0084"]
+
+ext1 BITPIX (extension access): $fits.ext1.BITPIX
+ext1 NAXIS (retained extension access): $fits.ext1.NAXIS
+
+(extension plus loop)
+#foreach ($t in $fits.ext1.iterate.TEST)
+$t
+#end
+(loop end)
+
+SPCBRRA unit (unit from fits comments): $fits.unit.SPCBRRA
+
+TEST1 unit (units on extension): $fits.ext1.unit.TEST1
+
+Velocity Logic testing
+======================
+
+#set ( $byteSum = $numberTool.toNumber($label.EXTENSION_CALIB_ERROR_EST_HEADER.BYTES) + $numberTool.toNumber($label.HEADER.BYTES) )
+HEADER BYTES + EXTENSION_CALIB_ERROR_EST_HEADER BYTES (math): $byteSum
+
+#if ( "$label.TARGET_NAME" == "ASTEROID 486958 (2014 MU69)" )
+if logic successful
+#end
+
+#if ( "$label.TARGET_NAME" == "MOON" )
+else logic unsuccessful
+#else
+else logic successful
+#end
