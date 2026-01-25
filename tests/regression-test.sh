@@ -35,6 +35,7 @@ else
     success_json=success/vals_regression_test_success.json
     success_log=success/regression_test_success.log
     success_nts=success/regression_test_success_nts.log
+fi
 
 if (( DO_KWEX )); then
     kwex ../templates/"$template_name" regression_test.fit regression_test.lbl --output output/regression_test.lblx --log output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
