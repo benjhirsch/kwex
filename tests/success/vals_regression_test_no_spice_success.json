@@ -161,6 +161,5 @@
         "unit": {
             "SPCBRRA": "degrees"
         }
-    },
-    "output_file_name": "C:/kwex/tests/output/regression_test.lblx"
+    }
 }
