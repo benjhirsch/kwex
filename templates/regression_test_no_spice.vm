@@ -29,7 +29,6 @@ col name test
 EXTENSION_IQVALS_TABLE COL NAME $c.BYTES
 #end
 
-
 FITS header testing
 ===================
 
