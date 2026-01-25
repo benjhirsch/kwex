@@ -5,7 +5,8 @@ from pathlib import Path
 from . import config
 from .names import ConfigKey, ConfigState
 from .constants import *
-from .utils.errors import error_handler
+from .utils.errors import error_handler, KwexError
+from .loggers import *
 
 cfg = config.Config()
 
@@ -34,10 +35,9 @@ def cli_override(override: list, log: str) -> dict:
 def config_checker(config_arg: str) -> tuple[str, str]:
     """ CLI function that converts argument into keyword:value pair and checks for validity. """
     #some config settings have a limited set of acceptable values, defined in CONFIG_STATES
-    try:
-        key, value = config_arg.split('=')
-    except:
-        error_handler(lambda: False, '%s is not a valid argument', config_arg)
+    kvp = config_arg.split('=')
+    error_handler(lambda: len(kvp) == 2, '%s is not a valid argument', config_arg)
+    key, value = kvp
 
     if Path(value).is_dir():
         value = Path(value).expanduser().resolve().as_posix()
@@ -45,7 +45,6 @@ def config_checker(config_arg: str) -> tuple[str, str]:
     error_handler(lambda: key in config.DEFAULTS, '%s is not a valid config setting', key)
     error_handler(lambda: key not in CONFIG_STATES or value in CONFIG_STATES[key], '%s is not a valid value for %s', value, key)
     error_handler(lambda: key not in CONFIG_BOOLEAN or value in CONFIG_ENABLED_DICT, '%s is not a valid value for %s', value, key)
-    
     return key, value
 
 def print_full_help(parser: argparse.ArgumentParser):
@@ -105,15 +104,21 @@ def main(argv=None):
 def handle_run(args: argparse.Namespace):
     """ argparse command function for creating configuration object and running main kwex script. """
     #apply config changes from cli and create config object referenced throughout program
-    cfg.apply_cli_overrides(cli_override(args.override, args.log))
-    config.current = cfg
-    from .main import kwex_script
-    kwex_script(args)
+    try:
+        cfg.apply_cli_overrides(cli_override(args.override, args.log))
+        config.current = cfg
+        from .main import kwex_script
+        kwex_script(args)
+    except KwexError as e:
+        logger.get_logger().error(e.message)
 
 def handle_set_config(args: argparse.Namespace):
     """ argparse command function for changing configuration values. """
-    key, value = config_checker(args.set)
-    cfg.save_config(key, value)
+    try:
+        key, value = config_checker(args.set)
+        cfg.save_config(key, value)
+    except KwexError as e:
+        logger.get_logger().error(e.message)
 
 def handle_get_config(args: argparse.Namespace):
     """ argparse command function for fetching configuration values. """
