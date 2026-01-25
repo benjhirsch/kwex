@@ -29,7 +29,6 @@ col name test
 EXTENSION_IQVALS_TABLE COL NAME $c.BYTES
 #end
 
-
 FITS header testing
 ===================
 
@@ -55,7 +54,6 @@ SPCBRRA unit (unit from fits comments): $fits.unit.SPCBRRA
 
 TEST1 unit (units on extension): $fits.ext1.unit.TEST1
 
-
 SPICE computation testing
 =========================
 
@@ -74,7 +72,6 @@ SPCPAXIN (instrument_position_angle): $spice.SPCPAXIN
 SPCTSCLA (sub_point): $spice.SPCTSCLA
 
 PHASE_ANGLE (sol_phase_ang): $spice.PHASE_ANGLE
-
 
 Velocity Logic testing
 ======================

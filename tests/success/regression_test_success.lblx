@@ -55,7 +55,6 @@ col name test
 EXTENSION_IQVALS_TABLE COL NAME 2
 EXTENSION_IQVALS_TABLE COL NAME 2
 
-
 FITS header testing
 ===================
 
@@ -80,7 +79,6 @@ SPCBRRA unit (unit from fits comments): degrees
 
 TEST1 unit (units on extension): tests/second
 
-
 SPICE computation testing
 =========================
 
@@ -99,7 +97,6 @@ SPCPAXIN (instrument_position_angle): 89.58671319670981
 SPCTSCLA (sub_point): -8.39918302345119
 
 PHASE_ANGLE (sol_phase_ang): 11.261060755072133
-
 
 Velocity Logic testing
 ======================
