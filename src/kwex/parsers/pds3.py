@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from ..constants import *
 from ..names import Source, PointerFlag, PDS3
@@ -44,31 +44,35 @@ def _add_kv(kvd: dict, k: str, v) -> dict:
 
     return kvd
 
-def _read_line_check(k: str, v: str, lvl: str, pl: dict) -> bool:
+def _read_line_check(k: str, v: str, olvl: str, plvl, pl: dict) -> bool:
     """ Helper function to check whether a line from the label needs to be read for parsing purposes """
     if v == '':
         #don't parse blank value strings
         return False
-    if len(pl) == 0:
-        #if the pointer list has nothing to say about this level, either it wasn't supplied (so pars everything) or we're at the end of a nested object and may need whatever it contains
+    if len(pl[olvl]) == 0:
+        #if the pointer list has nothing to say about this level, either it wasn't supplied (so parse everything) or we're at the end of a nested object pointer and may need whatever it contains
         return True
-    if k in pl:
-        #parse lines if they contain template keywords
+    if k in pl[olvl] and olvl == plvl:
+        #parse lines if they contain template keywords where we are
         return True
-    if k == PDS3.OBJECT and v in pl:
-        #parse lines if they're objects referenced in the template
+    if k in (PDS3.OBJECT, PDS3.END_OBJECT):
+        #parse lines if we need to get into or out of an objct
         return True
-    if k == PDS3.END_OBJECT and lvl != PDS3.FLAT:
-        #parse lines to get out of objects we ended up in
-        return True
+    
+def _object_level(ostack, level=0):
+    """ Helper function to get current depth in an arbitrarily nested label """
+    if len(ostack) > level:
+        return list(ostack.keys())[-(1+level)]
+    else:
+        return PDS3.FLAT
 
 def get_lbl(label: Path, pointer_list=defaultdict(dict)) -> dict:
     """ PDS3 label parser. Reads file and returns dictionary of keyword:value pairs. Handles objects of arbitrary depth and multi-line value strings. Preserves format of text fields with whitespace. """
     info_logger('Reading PDS3 label %s', label.name)
 
-    kv_dict = {}
-    ostack = []
-    level = [PDS3.FLAT]
+    kv_dict = {} #keyword:value dictionary constructed by parsing the label
+    ostack = OrderedDict() #hierarchically ordered dictionary for tracking nested objects
+    pseudo_level = PDS3.FLAT #depth based on what line we're at rather than what's actually being parsed
 
     with open(label) as f:
         for line in f:
@@ -77,7 +81,7 @@ def get_lbl(label: Path, pointer_list=defaultdict(dict)) -> dict:
             k = kfull.strip()
             v = vfull.strip()
 
-            if _read_line_check(k, v, level[-1], pointer_list[level[-1]]):
+            if _read_line_check(k, v, _object_level(ostack), pseudo_level, pointer_list):
                 #multi-line values will start with (, {, or "
                 if v.startswith(tuple(MCHAR.keys())):
                     mstop = MCHAR[v[0]] #multi-line ends with closing version of what it opened with
@@ -94,21 +98,25 @@ def get_lbl(label: Path, pointer_list=defaultdict(dict)) -> dict:
                     v = '\n'.join(multi_line)
                 elif k == PDS3.OBJECT:
                     #at the start of a new object, add to the object stack and return to the top of the loop
-                    ostack.append([v, {}])
-                    level.append(v)
+                    if _read_line_check(v, None, _object_level(ostack), pseudo_level, pointer_list):
+                        #when entering an object, the value part of the kw=val pair is what we're looking for in the pointer list
+                        ostack[v] = {}
+                    pseudo_level = v
                     continue
                 elif k == PDS3.END_OBJECT:
                     #at the end of an object, remove the most recent object from the stack and assign it to the kw=val pair
-                    k, v = ostack.pop()
-                    q = level.pop()
+                    pseudo_level = _object_level(ostack, 1)
+                    if v == _object_level(ostack):
+                        k, v = ostack.popitem()
 
                 try:
-                    v = _format_arbitrary_v(v, pointer_list[level[-1]][k][PointerFlag.UNIT])
+                    v = _format_arbitrary_v(v, pointer_list[_object_level(ostack)][k][PointerFlag.UNIT])
                 except:
                     pass
 
                 if ostack:
-                    ostack[-1][-1] = _add_kv(ostack[-1][-1], k, v)
+                    ostack_top = _object_level(ostack)
+                    ostack[ostack_top] = _add_kv(ostack[ostack_top], k, v)
                     #if we're in an object, this line's kw=val pair is added to the object instead of the label dictionary
                 else:
                     kv_dict = _add_kv(kv_dict, k, v)

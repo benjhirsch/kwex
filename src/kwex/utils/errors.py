@@ -69,6 +69,9 @@ def log_bad_output():
                 try:
                     with file.open() as f:
                         for line in f:
+                            if all(bad_found.values()):
+                                break
+                            
                             for bad in BAD_OUT.keys():
                                 if not bad_found[bad] and any(bad in line for bad in BAD_OUT[bad]):
                                     logger.info_logger('%s: %s', bad, file.as_posix())
