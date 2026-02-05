@@ -1,4 +1,4 @@
-regression test command (from kwex directory): kwex templates/regression_test.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
+regression test command (from kwex directory): kwex templates/regression_test_no_spice.vm tests/regression_test.fit tests/regression_test.lbl --output tests/output/regression_test.lblx --log tests/output/regression_test.log --override keep_json=ENABLED output_check=ENABLED warning_output=INFO
 
 PDS3 label testing
 ==================
@@ -53,25 +53,6 @@ $t
 SPCBRRA unit (unit from fits comments): $fits.unit.SPCBRRA
 
 TEST1 unit (units on extension): $fits.ext1.unit.TEST1
-
-SPICE computation testing
-=========================
-
-SPCBRRA (instrument_boresight): $spice.SPCBRRA
-
-SPCEMEN (clock_angle): $spice.SPCEMEN
-
-SPCQA (quaternion_component): $spice.SPCQA
-
-SPCESCRN (state_vector_magnitude): $spice.SPCESCRN
-
-SPCSSCX (state_vector_component): $spice.SPCSSCX
-
-SPCPAXIN (instrument_position_angle): $spice.SPCPAXIN
-
-SPCTSCLA (sub_point): $spice.SPCTSCLA
-
-PHASE_ANGLE (sol_phase_ang): $spice.PHASE_ANGLE
 
 Velocity Logic testing
 ======================

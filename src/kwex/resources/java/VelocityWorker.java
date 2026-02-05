@@ -1,73 +1,68 @@
+import java.io.*;
+import java.util.*;
+import com.fasterxml.jackson.databind.*;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.Template;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.Template;
 import org.apache.velocity.tools.generic.NumberTool;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+public class VelocityWorker {
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.List;
-import java.io.File;
-import java.util.ArrayList;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    public static void main(String [] args) throws Exception {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+        String templatePath = args[0];
+        String templateName = args[1];
 
-public class VMtoXML {
-    public static void main(String[] args) {
-        String jsonValFile = args[0];
-        String tmpFilePath = args[1];
-        String tmpFileName = args[2];
-        String outFileName = args[3];
+        VelocityEngine velEng = new VelocityEngine();
+        velEng.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
+        velEng.setProperty("file.resource.loader.path", templatePath);
+        velEng.init();
 
-        try {
-            // map json keyword value file into node structure
-            ObjectMapper objMpr = new ObjectMapper();
-            JsonNode rootNode = objMpr.readTree(new File(jsonValFile));
-            Map<String, Object> valMap = jsonToMap(rootNode);
+        Template tmp = null;
+        tmp = velEng.getTemplate(templateName);
 
-            // initialize velocity engine and add the .vm template to it
-            VelocityEngine velEng = new VelocityEngine();
-            velEng.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
-            velEng.setProperty("file.resource.loader.path", tmpFilePath);
-            velEng.init();
+        String line;
+        while ((line = in.readLine()) != null) {
+            try {
+                Map<String, Object> req = MAPPER.readValue(line, Map.class);
+                if ("terminate".equals(req.get("cmd"))) {
+                    break;
+                }
+                
+                String outputFileName = (String) req.get("output_file_name");
 
-            // add NumberTool to the velocity context to enable basic in-template arithmetic
-            VelocityContext context = new VelocityContext();
-            context.put("numberTool", new NumberTool());
+                JsonNode rootNode = MAPPER.readTree(line);
+                Map<String, Object> valMap = jsonToMap(rootNode);
 
-            // add all $label, $fits (plus extensions), and $spice keyword values to the Velocity context
-            for (String key : valMap.keySet()) {
-                context.put(key, valMap.get(key));
-            }
+                VelocityContext context = new VelocityContext();
+                context.put("numberTool", new NumberTool());
+                for (String key : valMap.keySet()) {
+                    context.put(key, valMap.get(key));
+                }
 
-            // get the template as a Velocity Template object
-            Template tmp = null;
-            tmp = velEng.getTemplate(tmpFileName);
+                StringWriter strWriter = new StringWriter();
+                tmp.merge(context, strWriter);
+                String output = strWriter.toString();
 
-            // merge template with context and create string representing template with pointers replaced by their values
-            StringWriter strWriter = new StringWriter();
-            tmp.merge(context, strWriter);
-            String output = strWriter.toString();
-
-            // write the output string to the specified output file
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFileName))) {
-                writer.write(output);
-            } catch (IOException e) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
+                    writer.write(output);
+                } catch (IOException e) {
                     e.printStackTrace();
-            }
+                }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+                out.write("ok\n");
+                out.flush();
+            } catch (Exception e) {
+                out.write(e.getMessage() + "\n");
+                out.flush();
+            }
         }
+
+        return;
     }
 
     private static Map<String, Object> jsonToMap(JsonNode node) {

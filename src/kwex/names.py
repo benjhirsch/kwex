@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import StrEnum, Enum, auto
 
 class ConfigKey(StrEnum):
     """ Symbolic names for configuration keys with string values for use in JSON config file. """
@@ -55,3 +55,20 @@ class PointerFlag(StrEnum):
     """ Symbolic names for Velocity template pointer flags with string values to use in the templates. """
     UNIT = 'unit'
     ITERATE = 'iterate'
+    FILEINFO = 'fileinfo'
+
+class FITS(Enum):
+    """ Symbolic names for attributes of parsed FITS keywords. """
+    HEADER = auto()
+    EXT_NUM = auto()
+    KEYWORD = auto()
+    TREE = auto()
+
+class PDS3(StrEnum):
+    """ Symbolic names for attributes of parsed PDS3 keywords. """
+    VALUE = 'value'
+    UNIT = 'unit'
+    OBJECT = 'OBJECT'
+    END_OBJECT = 'END_OBJECT'
+    FLAT = auto()
+    TEMPLATE_KW = auto()

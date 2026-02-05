@@ -1,10 +1,10 @@
 {
     "PTR_": {
-        "pos": "start",
-        "sub": "^"
+        "position": "start",
+        "pds3_str": "^"
     },
     "_COLON_": {
-        "pos": "in",
-        "sub": ":"
+        "position": "in",
+        "pds3_str": ":"
     }
 }

@@ -8,12 +8,12 @@ USER_DIR = Path.home() / '.kwex'
 CONFIG_PATH = USER_DIR / 'config.json'
 
 RESOURCE_PATH = files('kwex.resources')
-VAR_SUB_LIST = RESOURCE_PATH.joinpath('pds3/var_sub.json')
+VAR_SUB_JSON = RESOURCE_PATH.joinpath('pds3/var_sub.json')
 MAJOR_TO_VERSION = RESOURCE_PATH.joinpath('java/major_to_version.json')
-JAVA_SOURCE = RESOURCE_PATH.joinpath('java/VMtoXML.java')
+JAVA_SOURCE = RESOURCE_PATH.joinpath('java/VelocityWorker.java')
 
 JAVA_DIR = KWEX_DIR / 'resources/java'
-JAVA_CLASS = USER_DIR / 'VMtoXML.class'
+JAVA_CLASS = USER_DIR / 'VelocityWorker.class'
 JAR_FILES = ['velocity-1.7.jar',
              'velocity-tools-2.0.jar',
              'jackson-core-2.9.9.jar',
@@ -23,9 +23,9 @@ JAR_FILES = ['velocity-1.7.jar',
              'commons-lang-2.4.jar']
 
 RESERVED_XML_CHARS = {
-    '&': 'amp',
-    '<': 'lt',
-    '>': 'gt'
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
 }
 
 EXTENSIONS = {
@@ -62,18 +62,3 @@ CONFIG_STATES = {
         ConfigState.MOVE
     ]
 }
-
-BAD_OUTPUT_CHECK = [
-    '$label',
-    '$fits',
-    '$spice',
-    '${label',
-    '${fits',
-    '${spice',
-    '#if',
-    '#for',
-    '#set',
-    '#parse',
-    'KEYWORD VALUE NOT FOUND',
-    'KEYWORD NOT RECALCULATED'
-]

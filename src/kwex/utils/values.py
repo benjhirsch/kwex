@@ -2,17 +2,24 @@ import json
 import simpleeval
 import spiceypy as spice
 import numpy as np
+import re
 
-from ..loggers.logger import get_logger
-from ..loggers.interrupter import warning_handler
+from ..loggers import *
 from ..constants import *
-from ..config import get_config
 from ..state import run_state
+from ..config import get_config
 from ..names import ConfigKey
+from .errors import warning_handler
+
+RESERVED_PATTERNS = []
+for c in RESERVED_XML_CHARS:
+    pattern = re.compile(r'\%s(?!.*;)' % c) #reserved character not followed by 0+ other characters and then a semi-colon
+    escape_char = RESERVED_XML_CHARS[c]
+    RESERVED_PATTERNS.append(tuple([pattern, escape_char]))
 
 def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE NOT FOUND') -> dict:
-    val_entry = {}
     """ Utility that constructs a dictionary of values retrieved from input files corresponding to variable pointers in a template file. """
+    val_entry = {}
     if not func_var:
         #if no explicit function variable is given, use keyword
         func_var = keyword
@@ -20,22 +27,40 @@ def add_to_val(keyword: str, val_func, func_var=None, except_val='KEYWORD VALUE 
         val = val_func(func_var)
     except Exception as e:
         val = except_val
-        if get_config(ConfigKey.OUTPUT_CHECK):
-            run_state.bad_output = True
-        warning_handler(f'keyword {keyword} value not found because {e}')
+        run_state.bad_output = True
+        warning_handler('keyword %s value not found because %s: %s', keyword, type(e).__name__, e)
 
     val_entry[keyword] = val
 
     return val_entry
 
 def send_values(val_list: dict, output_path: Path) -> Path:
-    """ Helper function that writes temporary *.json file to feed into Velocity engine """
-    json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
+    """ Helper function that sends dictionary of keyword values to the Velocity engine and optionally records them as a JSON file """
+    if get_config(ConfigKey.VELOCITY):
+        info_logger('Sending %s keyword values to Velocity', output_path.name)
+        serial_val_list = val_list.copy()
+        serial_val_list['output_file_name'] = output_path.as_posix()
+        val_list_str = fix_json(serial_val_list)
+        run_state.velocity_process.stdin.write(val_list_str)
+        run_state.velocity_process.stdin.flush()
 
-    get_logger().info(f'Recording keyword values in {json_vals.name}...')
+        resp = run_state.velocity_process.stdout.readline()
+        if resp != 'ok\n':
+            warning_handler('Velocity error: %s', resp)
 
-    json_vals.write_text(json.dumps(val_list, indent=4))
-    return json_vals
+    if get_config(ConfigKey.KEEP_JSON):
+        json_vals = output_path.with_stem(f'vals_{output_path.stem}').with_suffix('.json')
+        info_logger('Recording keyword values in %s', json_vals.name)
+        val_list_str = fix_json(val_list, indent=4)
+        json_vals.write_text(val_list_str)
+
+def fix_json(val_list: dict, indent=None):
+    """ Utility that serializes a Python dictionary as a JSON string and replaces invalid XML characters """
+    val_list_str = json.dumps(val_list, indent=indent)
+    #reserved XML character replacement
+    for pattern, escape_char in RESERVED_PATTERNS:
+        val_list_str = re.sub(pattern, escape_char, val_list_str)
+    return val_list_str+'\n'
 
 def init_eval(ksp) -> simpleeval.SimpleEval:
     """ Funtion to initialize the simpleeval evaluator with values from a product's SpiceWrapper object. """

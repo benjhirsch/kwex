@@ -8,17 +8,28 @@ class RunState:
     bad_output_list: set[Path] = field(default_factory=set)
     json_list: list[Path] = field(default_factory=list)
 
-    var_list: dict = field(default_factory=dict)
     spice_eqns: dict = field(default_factory=dict)
-    args: dict = field(default_factory=dict)
-    
-    nows_template_filename: Path = Path()
+    body_frames: dict = field(default_factory=dict)
+    fits_spice_kws: dict = field(default_factory=dict)
+    instr_frame_params: dict = field(default_factory=dict)
+    var_sub_list: dict = field(default_factory=dict)
+
+    nows_template_str: str = ''
+    abcorr: str = ''
+
     input_root: Path = Path()
     kernel_path: Path = Path()
+    nows_template_filename: Path = Path()
 
     bad_output: bool = False
     java_compile_process: bool = False
     velocity_process: bool = False
     temp_kernel: bool = False
+
+    fits_hdr_list: set = field(default_factory=set)
+    fits_iter_list: set = field(default_factory=set)
+    fits_fileinfo_check: bool = False
+
+    local_template_vars: set = field(default_factory=set)
 
 run_state = RunState()

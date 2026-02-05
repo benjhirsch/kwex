@@ -68,7 +68,7 @@ A few basics are necessary, however. The `.vm` template file acts as an input fi
 where `source` is one of `fits`, `label`, or `spice`, and `KEYWORD` is (usually) exactly as it appears in the source.
 
 ### FITS Keywords
-A number of edge cases exist for FITS keywords, which are handled by adding flags to template pointer. Multiple flags can be added and order is unimportant, so long as `$fits` is first and `keyword` is last. 
+A number of edge cases exist for FITS keywords, which are handled by adding flags to template pointer. Multiple flags can be added and order is unimportant, so long as `$fits` is first and `keyword` is last.
 
 By default, kwex searches for keywords in the primary header. To specify a different header, write the pointer as:
 
@@ -85,6 +85,10 @@ where `base_keyword` is the name of the keyword sans any index value, e.g. `VECT
 To access the bracketed `[unit]` in a FITS keyword's comment field, write:
 
 `$fits.unit.KEYWORD`
+
+To access a FITS header's `astropy.io.fits` metadata, such as `hdrLoc` or `datSpan`, write:
+
+`$fits(.extN).fileinfo.KEYWORD`
 
 ### PDS3 Keywords
 This is mostly unproblematic. To point to a keyword within a PDS3 nested object, write:
@@ -105,7 +109,7 @@ To get the `<unit>`, write:
 
 `$label.KEYWORD.unit`
 
-Some PDS3 keywords are not valid variable names in Velocity/Java. To point to these keywords in a template, a substitute variable name is required. Common substitutes are defined in [var_sub.json](src/kwex/resources/pds3/var_sub.json). More substitutes can be added to this file. Each entry begins with a substitute string that will be used in the template file, followed by the `pos` parameter, which indicates where the substitute string appears in a variable name (`start`, `in`, or `end`), and the `sub` parameter, which is the string in the PDS3 keyword that needs replacing.
+Some PDS3 keywords are not valid variable names in Velocity/Java. To point to these keywords in a template, a substitute variable name is required. Common substitutes are defined in [var_sub.json](src/kwex/resources/pds3/var_sub.json). More substitutes can be added to this file. Each entry begins with a substitute string that will be used in the template file, followed by the `position` parameter, which indicates where the substitute string appears in a variable name (`start`, `in`, or `end`), and the `pds3_str` parameter, which is the string in the PDS3 keyword that needs replacing.
 
 For example, PDS3 keywords such as `^Header` are not valid variable names in Java due to the `^` character. The first entry in var_sub.json indicates that you can subtitute in `PTR_` in place of `^` at the beginning of a variable name.
 
@@ -139,14 +143,30 @@ These maps and arrays can be included anywhere in your template (before the vari
 
 Again, be sure to include the parse statement before the variables it defines are required.
 
-## Credit
-The SPICE routines in this tool were adapted from code written by Benjamin Sharkey, Senior Faculty Specialist at UMD, with contributions from Adeline Gicquel-Brodtke, Senior Faculty Specialist at UMD.
-
-## Contact Info
-For any questions or issues, contact Ben Hirsch of the PDS Small Bodies Node at bhirsch1@umd.edu.
-
 ## Installation
 
-Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `regex`, `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
+Clone or otherwise download this repo, unzip if necessary, and run either [insall-kwex.bat](insall-kwex.bat) or [install-kwex.sh](install-kwex.sh) depending on your system. This will create an executable command-line tool for running the main kwex script. Python >3.11 is required along with `numpy`, `astropy`, `spiceypy`, and `simpleeval`.
 
 kwex uses the Java-based Apache Velocity template engine. All necessary `.jar` files are included in the [java](src/kwex/resources/java) directory, but you will need some Java Runtime Environment installed.
+
+## Regression Testing
+
+If you plan on either making changes to this project or want to ensure it's been installed correctly on your system, you may want to make use of the regression test scripts in the [tests](tests) directory. [regression-test.bat](tests/regression-test.bat)/[sh](tests/regression-test.sh) run kwex on sample data contained in the directory against Velocity templates found in [templates](templates), then check to make sure the output matches what's in the [success](tests/success/) directory. If all goes well, the scripts will output:
+
+```
+lblx good
+json good
+log good
+```
+
+If the corresponding files do not match, you'll get `bad` instead. The scripts can be run with four command-line options depending on your use case:
+* `no-kwex` - Does not run kwex and instead justs checks output files vs. success files
+* `no-spice` - Uses the [regression_test_no_spice.vm](templates/regression_test_no_spice.vm) template which omits SPICE keywords in case the `spice_kernel` config option has no value
+* `ignore-java` - When comparing log files, ignores log info about compiling the [VelocityWorker](src/kwex/resources/java/VelocityWorker.java) Java class, which should only happen on first run
+* `ignore-kernel` - When comparing log files, ignores log info about correcting `PATH_VALUES` in your metakernel, which can be located anywhere on your system
+
+## Credit
+The SPICE routines in this tool were adapted from code written by [Benjamin Sharkey](https://github.com/bensharkey), Senior Faculty Specialist at UMD, with contributions from [Adeline Gicquel-Brodtke](https://github.com/agicquelb), Senior Faculty Specialist at UMD.
+
+## Contact Info
+For any questions or issues, contact [Ben Hirsch](https://github.com/benjhirsch) of the PDS Small Bodies Node at bhirsch1@umd.edu.

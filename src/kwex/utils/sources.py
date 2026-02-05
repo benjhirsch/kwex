@@ -1,29 +1,32 @@
 from pathlib import Path
 from glob import glob
-import regex as re
+import re
 
 from ..config import get_config
 from ..constants import *
 from ..names import ConfigKey
-from ..loggers.interrupter import warning_handler, error_handler
-from ..loggers.logger import get_logger
+from ..loggers import *
 from ..state import run_state
+from .errors import warning_handler, error_handler
 
 def source_id(file):
+    """ Utility for checking whether a source product file extension is valid and returning a normalized form. """
     ext = file.suffix
     for s in EXTENSIONS:
         if ext.lower() in EXTENSIONS[s]:
             return s
-    warning_handler(f'{file.name} does not have a valid extension for a source file.')
+    warning_handler('%s does not have a valid extension for a source file', file.name)
     return False
 
 def source_check(source, sid, check=False):
+    """ Utility for checking whether a source product is a valid file with a valid file extension. """
     file_status = not check or source.is_file()
     if not file_status:
-        warning_handler(f'{source.name} is not a valid file.')
+        warning_handler('%s is not a valid file', source.name)
     return sid and file_status
 
 def source_iter(source_list, check=False):
+    """ Utility for iterating through a list of files and constructing a set of valid source files. """
     added_set = set()
     for s in source_list:
         if not isinstance(s, Path):
@@ -34,7 +37,7 @@ def source_iter(source_list, check=False):
     
     return added_set
 
-def get_input(input: list) -> tuple[set, set]:
+def get_input(*input) -> set:
     """ Utility that takes --input parameter and constructs two sets of files: one of PDS3, one of FITS 
     
     Supports: individual files, multiple positional files, directories, glob patterns, ~ expansion, and @file.ext w/ list of input files"""
@@ -68,30 +71,42 @@ def get_input(input: list) -> tuple[set, set]:
             source_set.add(input_path)
             continue
 
-        warning_handler(f'Invalid --input parameter {i}')
+        warning_handler('Invalid input parameter %s', i)
 
-    error_handler(lambda: len(source_set) > 0, 'No source products found.')
+    error_handler(lambda: len(source_set) > 0, 'No source products found')
 
     return source_set
 
 def check_kernel(kernel: str):
     """ Utility to modify a metakernel's PATH_VALUE keyword to match the its physical location. """
     kernel_path = Path(kernel)
-    error_handler(lambda: kernel_path.is_file(), f'SPICE kernel {kernel_path.name} not found.')
+    error_handler(lambda: kernel_path.is_file(), 'SPICE kernel %s not found', kernel_path.name)
 
     #check if kernel PATH_VALUE is relative or wrong and switch to absolute and correct
     if kernel_path.suffix == '.tm':
         #only relevant for metakernels
         kernel_text = kernel.read_text()
-        kernel_path_value = Path(re.search(r"PATH_VALUES\s+=\s+\(\n\s+'(.+)'", kernel_text).group(1))
-        kernel_path_repl = kernel_path.parent / 'data'
+        path_values_str = re.search(r"PATH_VALUES\s+=\s+\(\n\s+('.+')", kernel_text).group(1)
+        path_values_path = Path(path_values_str[1:-1])
+        path_values_repl = kernel_path.parent / 'data'
+        path_values_repl_str = f"'{path_values_repl.as_posix()}'"
         
-        if not (kernel_path_value.is_absolute() or kernel_path_value == kernel_path_repl):
-            kernel_text_repl = re.sub(r"(?<=PATH_VALUES\s+=\s+\(\n\s+').+(?=')", kernel_path_repl.as_posix(), kernel_text)
-            get_logger().info(f"Invalid PATH_VALUES in {kernel_path.name}. Writing temporary metakernel with PATH_VALUES '{kernel_path_repl}'...")
+        if not (path_values_path.is_absolute() or path_values_path == path_values_repl):
+            kernel_text_repl = kernel_text.replace(path_values_str, path_values_repl_str)
+            info_logger("Invalid PATH_VALUES in %s. Writing temporary metakernel with PATH_VALUES %s", kernel_path.name, path_values_repl_str)
             temp_kernel = kernel_path.with_stem(f'temp_{kernel_path.stem}')
             temp_kernel.write_text(kernel_text_repl)
-            run_state.kernel_path = temp_kernel
+            kernel_path = temp_kernel
             run_state.temp_kernel = True
-        else:
-            run_state.kernel_path = kernel_path
+            run_state.kernel_path = temp_kernel
+
+    return kernel_path
+
+def cleanup():
+    """ Utility for deleting temporary files at program end. """
+    try:
+        run_state.nows_template_filename.unlink()
+    except:
+        pass
+    if run_state.temp_kernel:
+        run_state.kernel_path.unlink()

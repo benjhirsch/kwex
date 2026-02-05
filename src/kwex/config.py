@@ -44,7 +44,7 @@ class Config:
         """ Config class method that overrides current config values with CLI overrides """
         for key, value in overrides.items():
             if value is not None:
-                value = get_boolean(key, value)
+                value = _get_boolean(key, value)
                 self.values[key] = value
 
     def save_config(self, key: str, value: str):
@@ -54,7 +54,7 @@ class Config:
         else:
             user_config = {}
 
-        value = get_boolean(key, value)
+        value = _get_boolean(key, value)
 
         user_config[key] = value
 
@@ -63,16 +63,26 @@ class Config:
 
 def get_config(key: str) -> str:
     """ Gettr function for config key values """
-    return current.values[key]
+    try:
+        v = current.values[key]
+    except AttributeError:
+        v = DEFAULTS[key]
+    except:
+        pass
+
+    return v
 
 def path(key: str) -> Path:
     """ Helper function that converts path-like config values into pathlib Paths """
     if get_config(key) == DEFAULTS[key]:
-        return RESOURCE_PATH.joinpath(get_config(key))
+        if key == ConfigKey.LOG_OUTPUT:
+            return Path.cwd() / DEFAULTS[key]
+        else:
+            return RESOURCE_PATH.joinpath(get_config(key))
     else:
         return Path(get_config(key))
     
-def get_boolean(key: str, value: str) -> bool:
+def _get_boolean(key: str, value: str) -> bool:
     """ Helper function that converts ENABLED/DISABLED strings to boolean values """
     if key in CONFIG_BOOLEAN:
         return CONFIG_ENABLED_DICT[value]
