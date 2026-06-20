@@ -27,7 +27,7 @@ LOCAL_VAR_PATTERN = re.compile(r'#set\s*\(\s*(\$\w+)\s*=')
 #PDS3 keyword variable substitution file
 VAR_SUB_LIST = json.loads(VAR_SUB_JSON.read_text())
 #and dictionary of functions for implementing it
-SUB_POSITION_CHECK = {'start': lambda x, y: x.startswith(y), 'in': lambda x, y: x in y, 'end': lambda x, y: x.endswith(y)}
+SUB_POSITION_CHECK = {'start': lambda x, y: x.startswith(y), 'in': lambda x, y: y in x, 'end': lambda x, y: x.endswith(y)}
 
 PDS3_POINTER_LIST = defaultdict(dict)
 
